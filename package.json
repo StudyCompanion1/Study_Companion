@@ -1,0 +1,22 @@
+{
+  "name": "study_companion",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Full stack app: React (Vite) frontend + FastAPI Backend",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && uv run fastapi dev app/main.py",
+    "dev:frontend": "npm run dev -w frontend",
+    "dev": "concurrently -k -n api,web -c blue,green \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:open": "concurrently -k -n api,web -c blue,green \"npm:dev:backend\" \"npm run dev -w frontend -- --open\"",
+    "install:all": "npm install && cd backend && uv sync",
+    "test:backend": "cd backend && uv run pytest",
+    "test:frontend": "npm run test -w frontend",
+    "test": "concurrently -n api,web -c blue,green \"npm:test:backend\" \"npm:test:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
