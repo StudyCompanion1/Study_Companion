@@ -32,3 +32,6 @@ Installs root + frontend npm dependencies and syncs backend Python dependencies 
 | `npm run dev:backend` | Run only the FastAPI backend |
 | `npm run dev:frontend` | Run only the frontend |
 | `npm run install:all` | Install all dependencies (root, frontend, backend) |
+| `npm run test` | Runs both the frontend + backend unit tests |
+| `npm run test:backend` | Runs only the backend unit tests |
+| `npm run test:frontend` | Runs only the frontend unit tests |
