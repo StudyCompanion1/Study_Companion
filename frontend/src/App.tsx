@@ -1,17 +1,34 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import AuthForm from './auth/AuthForm.tsx'
+import { getMe, logout, type User } from './auth/api.ts'
 
 function App() {
-  const [status, setScoreStatus] = useState('loading...')
+  // undefined while we ask the backend whether someone is already logged in
+  const [user, setUser] = useState<User | null | undefined>(undefined)
 
   useEffect(() => {
-    fetch('api/health')
-      .then((res) => res.json())
-      .then((data) => setScoreStatus(data.status))
-      .catch(() => setScoreStatus('error'))
+    getMe()
+      .then(setUser)
+      .catch(() => setUser(null))
   }, [])
 
-  return <h1>Backend status: {status}</h1>
+  if (user === undefined) return <p role="status">Loading…</p>
+
+  if (user === null) return <AuthForm onLoggedIn={setUser} />
+
+  // Placeholder until the Home Page / Dashboard (UX-3) replaces it
+  return (
+    <main>
+      <h1>Welcome, {user.name}</h1>
+      <p>You are logged in as {user.email}.</p>
+      <p>
+        <button type="button" onClick={() => logout().then(() => setUser(null))}>
+          Log out
+        </button>
+      </p>
+    </main>
+  )
 }
 
 export default App
