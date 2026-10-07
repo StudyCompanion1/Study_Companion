@@ -33,6 +33,16 @@ and set `SECRET_KEY` in it (the file explains how to generate one). Without it, 
 
 The backend stores data in a local SQLite file (`backend/study_companion.db`, git-ignored) until the AWS Postgres database is set up; delete the file to start fresh.
 
+### Switching to Postgres (once TI-1 is done)
+
+SQLite is a temporary stand-in. No app code depends on it, so the switch is configuration only:
+
+1. Add the Postgres driver: `cd backend && uv add "psycopg[binary]"`
+2. Set the connection string from TI-1 in `backend/.env` (never commit it):
+   `DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME`
+3. Create the tables: today the backend creates missing tables on startup (`create_db_and_tables` in `backend/app/db.py`). Once DA-1 adds versioned migrations, those replace that step.
+4. Run `npm run test:backend`, then log in through the app once to confirm.
+
 ## Authentication (DA-2)
 
 | Endpoint | Description |
