@@ -17,7 +17,7 @@ function App() {
 
   if (user === null) return <AuthForm onLoggedIn={setUser} />
 
-  // Placeholder until the Home Page / Dashboard (UX-3) replaces it
+  // TEMPORARY logged-in screen until the Home Page / Dashboard (UX-3) replaces it
   return (
     <main>
       <h1>Welcome, {user.name}</h1>

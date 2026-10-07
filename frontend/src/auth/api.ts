@@ -1,5 +1,6 @@
 // Calls to the backend auth API (backend/app/auth/router.py). The login cookie is
 // HttpOnly, so this code never sees the token; the browser sends it automatically.
+// Not temporary: a redesigned login page should keep using these functions.
 
 export type User = {
   id: string

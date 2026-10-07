@@ -4,8 +4,12 @@ import './AuthForm.css'
 
 type Mode = 'login' | 'register'
 
-// Functional login / create-account form for DA-2. Visual design belongs to UX (Figma
-// "Log in" screens); restyle freely, but keep the native form elements and labels.
+// TEMPORARY DESIGN, for the UX/UI group to replace with the Figma "Log in" screens.
+// This login / create-account form exists so the DA-2 login flow can be used and tested.
+// When redesigning:
+//   - Keep calling login() / register() from ./api.ts. That part is final, not temporary.
+//   - Keep native form elements, a <label> for every input, and the role="alert" error
+//     message, so the page stays usable with a keyboard and screen reader.
 export default function AuthForm({ onLoggedIn }: { onLoggedIn: (user: User) => void }) {
   const [mode, setMode] = useState<Mode>('login')
   const [error, setError] = useState('')

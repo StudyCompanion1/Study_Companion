@@ -42,6 +42,8 @@ The backend stores data in a local SQLite file (`backend/study_companion.db`, gi
 | `POST /api/auth/logout` | Log out |
 | `GET /api/auth/me` | The logged-in user, or 401 |
 
+The login page (`frontend/src/auth/AuthForm.tsx` and `.css`) is a **temporary design** so the login flow can be used and tested; the UX/UI group will replace it with the Figma design. A new design should keep calling the functions in `frontend/src/auth/api.ts`.
+
 Login state lives in an HttpOnly cookie that the browser sends automatically, so frontend code never handles tokens. In backend routes that need the logged-in user, add a `user: CurrentUser` parameter (from `app.auth.dependencies`) and use `user.id`. Try the endpoints at http://127.0.0.1:8000/docs while the backend is running.
 
 ## Scripts (run from root)
