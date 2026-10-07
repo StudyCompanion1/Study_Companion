@@ -23,6 +23,27 @@ npm run install:all
 
 Installs root + frontend npm dependencies and syncs backend Python dependencies via uv.
 
+Then create the backend's local settings file (git ignores it, so secrets never get committed):
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+and set `SECRET_KEY` in it (the file explains how to generate one). Without it, logins still work but everyone is logged out whenever the backend restarts.
+
+The backend stores data in a local SQLite file (`backend/study_companion.db`, git-ignored) until the AWS Postgres database is set up; delete the file to start fresh.
+
+## Authentication (DA-2)
+
+| Endpoint | Description |
+| --- | --- |
+| `POST /api/auth/register` | Create an account (`name`, `email`, `password`) and log in |
+| `POST /api/auth/login` | Log in (`email`, `password`) |
+| `POST /api/auth/logout` | Log out |
+| `GET /api/auth/me` | The logged-in user, or 401 |
+
+Login state lives in an HttpOnly cookie that the browser sends automatically, so frontend code never handles tokens. In backend routes that need the logged-in user, add a `user: CurrentUser` parameter (from `app.auth.dependencies`) and use `user.id`. Try the endpoints at http://127.0.0.1:8000/docs while the backend is running.
+
 ## Scripts (run from root)
 
 | Script | Description |
