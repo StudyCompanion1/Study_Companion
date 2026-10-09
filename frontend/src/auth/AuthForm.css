@@ -1,0 +1,84 @@
+/* TEMPORARY DESIGN: placeholder styles for the DA-2 login page. The UX/UI group will
+   replace these with the Figma "Log in" design. Uses the existing index.css variables. */
+.auth-form {
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.auth-form__title {
+  font-size: 2rem;
+  margin: 0 0 1.5rem;
+}
+
+.auth-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.auth-form__field label {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.auth-form__field input {
+  font: inherit;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--text);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.auth-form__hint {
+  font-size: 0.875rem;
+}
+
+.auth-form__error {
+  color: var(--text-h);
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+
+.auth-form__error:not(:empty) {
+  border-left: 4px solid var(--accent);
+  padding-left: 0.75rem;
+}
+
+.auth-form__error:not(:empty)::before {
+  content: 'Error: ';
+}
+
+.auth-form__submit,
+.auth-form__switch {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+}
+
+.auth-form__submit {
+  width: 100%;
+  color: var(--bg);
+  background: var(--text-h);
+  border: 1px solid var(--text-h);
+}
+
+.auth-form__submit:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.auth-form__switch {
+  margin-top: 1rem;
+  color: var(--text-h);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  padding-inline: 0;
+}
