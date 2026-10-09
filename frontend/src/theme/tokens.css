@@ -1,0 +1,89 @@
+/* Design tokens extracted from Figma (Study Companion — Home / Desktop), one block per theme mode. */
+
+:root,
+[data-theme='light'] {
+  --surface: #f3f6f4;
+  --surface-raised: #fbfcfb;
+  --surface-sunken: #e6ece8;
+  --ink: #1b2521;
+  --ink-muted: #4a5953;
+  --line: #c9d4ce;
+  --line-strong: #6f7d77;
+  --primary: #0d6b62;
+  --primary-soft: #d6ede9;
+  --on-primary: #ffffff;
+  --hl-green: #bfe8c6;
+  --hl-yellow: #ffe27a;
+  --hl-blue: #c3dcf7;
+  --mastery-low: #b0271d;
+  --mastery-low-soft: #f8e0dd;
+  --mastery-review: #855400;
+  --mastery-review-soft: #f7ead2;
+  --mastery-strong: #1a5fa6;
+  --mastery-strong-soft: #dde9f7;
+}
+
+[data-theme='dark'] {
+  --surface: #131a18;
+  --surface-raised: #1b2421;
+  --surface-sunken: #0e1412;
+  --ink: #e4ebe7;
+  --ink-muted: #a9b8b1;
+  --line: #2f3b37;
+  --line-strong: #8a9a93;
+  --primary: #5fc8b9;
+  --primary-soft: #16332f;
+  --on-primary: #08201d;
+  --hl-green: #1f4a2c;
+  --hl-yellow: #5a4a10;
+  --hl-blue: #1c3d61;
+  --mastery-low: #ff9a8f;
+  --mastery-low-soft: #3d1a17;
+  --mastery-review: #e8b35a;
+  --mastery-review-soft: #352812;
+  --mastery-strong: #86b9f2;
+  --mastery-strong-soft: #172a40;
+}
+
+[data-theme='high-contrast'] {
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f0f0f0;
+  --ink: #000000;
+  --ink-muted: #1a1a1a;
+  --line: #000000;
+  --line-strong: #000000;
+  --primary: #00473f;
+  --primary-soft: #e0f2ef;
+  --on-primary: #ffffff;
+  --hl-green: #b3e6bd;
+  --hl-yellow: #ffe066;
+  --hl-blue: #b8d6f7;
+  --mastery-low: #8a0000;
+  --mastery-low-soft: #fde8e6;
+  --mastery-review: #5c3a00;
+  --mastery-review-soft: #fbf0db;
+  --mastery-strong: #003a80;
+  --mastery-strong-soft: #e3eefc;
+}
+
+/* All lengths below are in rem (1rem = 16px at the browser default), per Foundations →
+   Responsive: "implement [sizes] in rem/em so they grow with the Text size setting" (WCAG 1.4.10).
+   Breakpoints/container-query thresholds follow the same rule — see component CSS files. */
+:root {
+  --radius-md: 0.625rem; /* 10px */
+  --radius-full: 9999px;
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.5rem; /* 24px */
+  --space-6: 2rem; /* 32px */
+  --space-8: 3rem; /* 48px */
+  --rail-width: 5.75rem; /* 92px */
+  --page-max: 100rem; /* 1600px, per Foundations → Scales */
+
+  --font-display: 'Lexend', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+}

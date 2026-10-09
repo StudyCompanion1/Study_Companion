@@ -1,0 +1,27 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+
+  /* Named container so PracticeRow (<32.5rem) and QuizRow (<26.25rem) can query the list's own
+     available width — see Foundations → Responsive, Tier 2. */
+  container-type: inline-size;
+  container-name: list;
+}
+
+.list > * + * {
+  border-top: 1px solid var(--line);
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  min-height: 3.5rem; /* 56px */
+  padding: var(--space-3) var(--space-4);
+}
