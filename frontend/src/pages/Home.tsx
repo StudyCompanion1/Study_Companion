@@ -5,6 +5,7 @@ import { SessionCard, type Session } from '../components/SessionCard'
 import { List } from '../components/List'
 import { PracticeRow, type PracticeTopic } from '../components/PracticeRow'
 import { QuizRow, type QuizResult } from '../components/QuizRow'
+import { ThemeSwitcher } from '../components/ThemeSwitcher'
 import './Home.css'
 
 const sessions: Session[] = [
@@ -31,6 +32,9 @@ export function Home() {
       <NavRail active="Home" />
       <main className="home__main">
         <div className="home__page">
+          <div className="home__theme-row">
+            <ThemeSwitcher />
+          </div>
           <PageHeader
             title="Good afternoon, Maya"
             summary="You studied for 42 minutes across 3 sessions this week."
