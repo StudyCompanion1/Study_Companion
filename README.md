@@ -44,6 +44,8 @@ Uses Gemini for PDF keyword/concept extraction and image OCR.
 
 **API Key:** Add your Gemini API key to a `.env` file in the project root:
 
+Follow this [Gemini AI LLM Key Instructions](https://ai.google.dev/gemini-api/docs/api-key)
+
 ```env
 GEMINI_API_KEY=your_api_key_here
 ```
