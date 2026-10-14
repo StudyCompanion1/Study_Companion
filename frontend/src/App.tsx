@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import AuthForm from './auth/AuthForm.tsx'
+import AuthForm from './pages/AuthForm.tsx'
 import { getMe, type User } from './auth/api.ts'
 import { ThemeProvider } from './theme/ThemeContext'
 import { Home } from './pages/Home'

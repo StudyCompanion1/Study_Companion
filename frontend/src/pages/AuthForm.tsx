@@ -1,5 +1,5 @@
-import { useId, useRef, useState, type FormEvent, type MouseEvent } from 'react'
-import { login, register, type User } from './api.ts'
+import { useId, useRef, useState, type FormEvent } from 'react'
+import { login, register, type User } from '../auth/api.ts'
 import { ThemeSwitcher } from '../components/ThemeSwitcher.tsx'
 import './AuthForm.css'
 
@@ -14,11 +14,6 @@ interface AuthFormProps {
   /** 'login' renders /login, 'register' renders /signup. Defaults to 'login'. */
   mode?: Mode
   onLoggedIn: (user: User) => void
-  /**
-   * Optional client-side navigation hook (e.g. wrap your router's navigate()). When omitted, the
-   * links below are plain <a href> and fall back to normal browser navigation.
-   */
-  onNavigate?: (path: string) => void
 }
 
 function validate(mode: Mode, name: string, email: string, password: string): FieldErrors {
@@ -39,7 +34,7 @@ function validate(mode: Mode, name: string, email: string, password: string): Fi
   return errors
 }
 
-export default function AuthForm({ mode = 'login', onLoggedIn, onNavigate }: AuthFormProps) {
+export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) {
   const id = useId()
   const [localMode, setLocalMode] = useState<Mode>(mode)
   const isRegister = localMode === 'register'
@@ -109,17 +104,6 @@ export default function AuthForm({ mode = 'login', onLoggedIn, onNavigate }: Aut
     setFormError('')
     setFieldErrors({})
     setShowPassword(false)
-  }
-
-  function link(path: string) {
-    return {
-      href: path,
-      onClick: (event: MouseEvent<HTMLAnchorElement>) => {
-        if (!onNavigate || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
-        event.preventDefault()
-        onNavigate(path)
-      },
-    }
   }
 
   const passwordType = showPassword ? 'text' : 'password'

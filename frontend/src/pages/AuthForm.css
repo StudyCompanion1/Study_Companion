@@ -168,7 +168,7 @@
 .auth-form__guest:focus-visible,
 .auth-form-footer__link:focus-visible,
 .auth-form-header__home:focus-visible {
-  outline: 3px solid var(--focus, var(--primary));
+  outline: 3px solid var(--primary);
   outline-offset: 2px;
 }
 
