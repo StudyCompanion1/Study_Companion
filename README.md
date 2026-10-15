@@ -68,3 +68,78 @@ Login state lives in an HttpOnly cookie that the browser sends automatically, so
 | `npm run test` | Runs both the frontend + backend unit tests |
 | `npm run test:backend` | Runs only the backend unit tests |
 | `npm run test:frontend` | Runs only the frontend unit tests |
+
+## AI Processing
+
+Uses Google Gemini for study material analysis, keyword and concept extraction, study guide generation, and OCR for images and scanned documents.
+
+### Supported File Types
+
+- PDF (`.pdf`)
+- Word documents (`.docx`)
+- PowerPoint presentations (`.pptx`)
+- Text files (`.txt`)
+- Images (`.jpg`, `.jpeg`, `.png`, `.webp`, and other supported image formats)
+
+SVG and RAW image formats require additional optional dependencies.
+
+Maximum upload size: **25 MB**.
+
+### Dependencies
+
+The backend uses `pymupdf`, `google-genai`, `python-dotenv`, `pillow`, `python-docx`, and `python-pptx`.
+
+Dependencies are managed through `backend/pyproject.toml` and `backend/uv.lock`.
+
+### Gemini API Key
+
+Add your Gemini API key to a `.env` file in the project root.
+
+Follow the [Gemini API Key Instructions](https://ai.google.dev/gemini-api/docs/api-key).
+
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+Do not commit your `.env` file or API key to GitHub.
+
+### FastAPI Endpoints
+
+**POST `/api/analyze` — Keyword and Concept Extraction**
+
+Accepts a file through the `file` field and generates:
+
+- Important keywords with definitions
+- Key concepts with explanations
+
+**POST `/api/study-guide` — Study Guide Generation**
+
+Accepts a file through the `file` field and generates:
+
+- Summary
+- Learning objectives
+- Essential topics to study
+- Recommended study methods
+- Practice activities
+- Flashcards
+- Practice questions with answers
+
+Both endpoints return:
+
+```json
+{
+  "result": "Generated AI response"
+}
+```
+
+### QA Testing
+
+From the project root, start the backend:
+
+```bash
+npm run dev:backend
+```
+
+Visit [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) to test both endpoints using FastAPI Swagger UI.
+
+Upload a supported file using the `file` field and execute the request to view the generated response.
