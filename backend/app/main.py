@@ -1,11 +1,20 @@
 # backend/app/main.py
 import os
 import tempfile
-import shutil
+from pathlib import Path
+from zipfile import BadZipFile
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+import pymupdf
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from ai_processing.keyword_concept_extraction import analyze_pdf
+from PIL import UnidentifiedImageError
+from starlette.concurrency import run_in_threadpool
+
+from ai_processing.keyword_concept_extraction import (
+    SUPPORTED_EXTENSIONS,
+    analyze_pdf,
+    generate_study_guide,
+)
 
 app = FastAPI()
 
@@ -20,6 +29,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024
+
 
 # health check
 @app.get("/api/health")
@@ -27,36 +38,91 @@ def health():
     return {"status": "ok"}
 
 
-# pdf analysis call
-@app.post("/api/analyze")
-def analyze(file: UploadFile = File(...)):
+# shared file upload processing
+async def _process_upload(file: UploadFile, task: str):
 
-    if not file.filename or not file.filename.lower().endswith(".pdf"):
+    extension = Path(file.filename or "").suffix.lower()
+
+    if extension not in SUPPORTED_EXTENSIONS:
         raise HTTPException(
             status_code=400,
-            detail="Please upload a PDF"
+            detail="Unsupported file type."
         )
 
-    pdf_path = None
+    temp_path = None
 
     try:
-        # saves uploaded PDF temporarily
+        # save uploaded file temporarily
         with tempfile.NamedTemporaryFile(
-            delete=False, suffix=".pdf"
+            delete=False,
+            suffix=extension
         ) as temp:
-            pdf_path = temp.name
-            shutil.copyfileobj(file.file, temp)
 
-        # call pdf llm function
-        result = analyze_pdf(pdf_path)
+            temp_path = temp.name
+            total = 0
 
-        # return output
+            while chunk := await file.read(1024 * 1024):
+
+                total += len(chunk)
+
+                if total > MAX_UPLOAD_BYTES:
+                    raise HTTPException(
+                        status_code=413,
+                        detail="File exceeds the 25 MB upload limit."
+                    )
+
+                temp.write(chunk)
+
+        # select Gemini processing function
+        processor = (
+            analyze_pdf
+            if task == "summary"
+            else generate_study_guide
+        )
+
+        # process outside the event loop
+        result = await run_in_threadpool(
+            processor,
+            temp_path
+        )
+
         return {"result": result}
 
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    except (
+        ValueError,
+        UnicodeError,
+        pymupdf.FileDataError,
+        BadZipFile,
+        UnidentifiedImageError
+    ) as exc:
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc)
+        ) from exc
 
     finally:
-        file.file.close()
-        if pdf_path and os.path.exists(pdf_path):
-            os.remove(pdf_path)
+        await file.close()
+
+        if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+# api #1 - concepts and keywords
+@app.post("/api/analyze")
+async def analyze(file: UploadFile = File(...)):
+
+    return await _process_upload(
+        file,
+        "summary"
+    )
+
+
+# api #2 - study guide
+@app.post("/api/study-guide")
+async def study_guide(file: UploadFile = File(...)):
+
+    return await _process_upload(
+        file,
+        "guide"
+    )
