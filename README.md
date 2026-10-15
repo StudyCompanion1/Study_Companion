@@ -93,15 +93,13 @@ Dependencies are managed through `backend/pyproject.toml` and `backend/uv.lock`.
 
 ### Gemini API Key
 
-Add your Gemini API key to a `.env` file in the project root.
+Add your Gemini API key to a `.env` file in the backend folder.
 
 Follow the [Gemini API Key Instructions](https://ai.google.dev/gemini-api/docs/api-key).
 
 ```env
 GEMINI_API_KEY=your_api_key_here
 ```
-
-Do not commit your `.env` file or API key to GitHub.
 
 ### FastAPI Endpoints
 
