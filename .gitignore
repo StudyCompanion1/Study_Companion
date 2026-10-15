@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .venv/
+.coverage
 
 # Node
 node_modules/
@@ -11,3 +12,5 @@ node_modules/
 
 # Testing
 test_data/
+# Local SQLite database
+*.db

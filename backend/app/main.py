@@ -3,6 +3,7 @@ import os
 import tempfile
 from pathlib import Path
 from zipfile import BadZipFile
+from contextlib import asynccontextmanager
 
 import pymupdf
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -16,7 +17,18 @@ from ai_processing.keyword_concept_extraction import (
     generate_study_guide,
 )
 
-app = FastAPI()
+from app.auth.router import router as auth_router
+from app.db import create_db_and_tables
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
+
+
+app = FastAPI(title="Study Companion API", lifespan=lifespan)
+app.include_router(auth_router)
 
 # react / vite frontend
 app.add_middleware(
