@@ -1,0 +1,88 @@
+/* Sizes from Figma CollectionCard (21:2), in rem like the rest of the codebase. */
+
+.collection-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  text-decoration: none;
+  overflow: hidden;
+}
+
+.collection-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Same focus ring as the team's Button (uses the --focus token). */
+.collection-card:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 5px var(--focus);
+}
+
+.collection-card__band {
+  display: flex;
+  align-items: flex-end;
+  min-height: 5.5rem; /* 88px */
+  padding: var(--space-3) var(--space-4);
+}
+
+.collection-card__band--green { background: var(--hl-green); }
+.collection-card__band--blue { background: var(--hl-blue); }
+.collection-card__band--yellow { background: var(--hl-yellow); }
+.collection-card__band--pink { background: var(--hl-pink); }
+
+.collection-card__code {
+  padding: 0.125rem var(--space-2); /* 2px 8px */
+  background: var(--surface-raised);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+  color: var(--ink);
+}
+
+.collection-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem; /* 2px */
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.collection-card__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1875rem; /* 19px */
+  line-height: 1.75rem; /* 28px */
+  color: var(--ink);
+}
+
+.collection-card__meta,
+.collection-card__stat {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+
+.collection-card__foot {
+  display: flex;
+  flex-wrap: wrap; /* wraps instead of clipping at large text sizes */
+  gap: var(--space-1) var(--space-4);
+  padding-top: var(--space-2);
+}
+
+.collection-card__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
