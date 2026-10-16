@@ -2,7 +2,7 @@ name: Discord PR stale review reminder
 
 on:
   schedule:
-    - cron: "0 * * * *" # hourly
+    - cron: "0 */12 * * *" # every 12 hours
   workflow_dispatch: {}
 
 env:
