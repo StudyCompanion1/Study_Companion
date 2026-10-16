@@ -8,13 +8,14 @@
   background: var(--surface);
 }
 
-/* Brand panel: hidden below the app-shell breakpoint (48rem). Flat sunken surface, no gradient. */
+/* Brand panel: hidden below the app-shell breakpoint (48rem). Flat sunken surface, no gradient.
+   Matches the AuthBrandPanel component in Figma — wordmark, pitch and a "what you can do" list. */
 .auth-welcome {
   display: none;
   flex: 1 0 0;
   flex-direction: column;
-  justify-content: center;
   align-items: flex-start;
+  gap: var(--space-6);
   padding: var(--space-8);
   box-sizing: border-box;
   background: var(--surface-sunken);
@@ -22,26 +23,47 @@
   color: var(--ink);
 }
 
-.auth-welcome__content {
+.auth-welcome__brand {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  max-width: 28rem;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 2.75rem;
 }
 
-.auth-welcome__brand {
-  margin: 0;
+.auth-welcome__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem; /* 44px */
+  height: 2.75rem;
+  flex-shrink: 0;
+  background: var(--primary);
+  border-radius: var(--radius-md);
   font-family: var(--font-display);
-  font-size: 1.1875rem;
   font-weight: 600;
-  line-height: 1.5;
-  color: var(--primary);
+  font-size: 1.1875rem; /* 19px */
+  color: var(--on-primary);
+}
+
+.auth-welcome__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1875rem; /* 19px */
+  line-height: 1.75rem;
+  color: var(--ink);
+}
+
+.auth-welcome__pitch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 35rem; /* 560px */
 }
 
 .auth-welcome__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: 2rem; /* 32px */
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -0.005em;
@@ -50,10 +72,49 @@
 
 .auth-welcome__subtitle {
   margin: 0;
-  max-width: 68ch;
   font-family: var(--font-body);
-  font-size: 1.0625rem;
+  font-size: 1.0625rem; /* 17px */
   line-height: 1.65;
+  color: var(--ink-muted);
+}
+
+.auth-welcome__features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 35rem; /* 560px */
+}
+
+.auth-welcome__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--ink); /* Icon stroke follows the surrounding text colour */
+}
+
+.auth-welcome__feature-text {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.auth-welcome__feature-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1.0625rem; /* 17px, Text/body-strong */
+  line-height: 1.75rem;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.auth-welcome__feature-body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.0625rem; /* 17px, Text/body */
+  line-height: 1.75rem;
+  letter-spacing: 0.01em;
   color: var(--ink-muted);
 }
 
@@ -87,191 +148,10 @@
   max-width: 26rem;
 }
 
-.auth-form-header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.auth-form-header__home {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--primary);
-  text-underline-offset: 0.2em;
-}
-
-.auth-form-header__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.005em;
-  color: var(--ink);
-}
-
-.auth-form-header__subtitle {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 1.0625rem;
-  line-height: 1.65;
-  color: var(--ink-muted);
-}
-
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-}
-
-.auth-form__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.auth-form__label {
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: 0.01em;
-  color: var(--ink);
-}
-
-.auth-form__input {
-  width: 100%;
-  min-height: 2.75rem; /* >=44px target */
-  padding: 0.5rem var(--space-3);
-  box-sizing: border-box;
-  font-family: var(--font-body);
-  font-size: 1.0625rem;
-  line-height: 1.5;
-  color: var(--ink);
-  background: var(--surface-raised);
-  border: 1px solid var(--line-strong); /* line is decorative; control boundaries use line-strong */
-  border-radius: var(--radius-md);
-}
-
-.auth-form__input::placeholder {
-  color: var(--ink-muted);
-}
-
-.auth-form__input:focus-visible,
-.auth-form__reveal:focus-visible,
-.auth-form__submit:focus-visible,
-.auth-form__guest:focus-visible,
-.auth-form-footer__link:focus-visible,
-.auth-form-header__home:focus-visible {
-  outline: 3px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.auth-form__input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Error state is never colour alone: icon + text + thicker border. */
-.auth-form__input[aria-invalid='true'] {
-  border-color: var(--mastery-low);
-  border-width: 2px;
-}
-
-.auth-form__password {
-  position: relative;
-  display: flex;
-}
-
-.auth-form__input--password {
-  padding-right: 5rem;
-}
-
-.auth-form__reveal {
-  position: absolute;
-  top: 0;
-  right: 0;
-  min-width: 4.5rem;
-  min-height: 2.75rem;
-  padding: 0 var(--space-3);
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--primary);
-  background: none;
-  border: 0;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-.auth-form__hint {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 0.875rem; /* 14px floor */
-  line-height: 1.45;
-  color: var(--ink-muted);
-}
-
-.auth-form__error {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  line-height: 1.45;
-  color: var(--mastery-low);
-}
-
-.auth-form__error-icon {
-  flex-shrink: 0;
-}
-
-.auth-form__notice {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--mastery-low);
-  background: var(--mastery-low-soft);
-  border: 1px solid var(--mastery-low);
-  border-radius: var(--radius-md);
-}
-
-/* Primary action: one per view. */
-.auth-form__submit {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  min-height: 2.75rem;
-  padding: 0.5rem var(--space-4);
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--on-primary);
-  background: var(--primary);
-  border: 1px solid var(--primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-.auth-form__submit:hover:not(:disabled) {
-  filter: brightness(0.92);
-}
-
-.auth-form__submit:disabled {
-  opacity: 0.7;
-  cursor: progress;
 }
 
 .auth-form__alternative {
@@ -299,30 +179,6 @@
   content: '';
 }
 
-/*Guest login button*/
-.auth-form__guest {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 2.75rem;
-  padding: 0.5rem var(--space-4);
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--primary);
-  background: var(--surface-raised);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-.auth-form__guest:hover {
-  background: var(--primary-soft);
-  border-color: var(--primary);
-}
-
 .auth-form__spinner {
   width: 1rem;
   height: 1rem;
@@ -345,28 +201,6 @@
   line-height: 1.5;
   text-align: center;
   color: var(--ink-muted);
-}
-
-.auth-form-footer__link {
-  display: inline-block;
-  padding: var(--space-3) var(--space-1); /* grows the hit area toward 44px */
-  font-weight: 600;
-  color: var(--primary);
-  text-underline-offset: 0.2em;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-}
-
-.auth-visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 @media (width >= 48rem) {

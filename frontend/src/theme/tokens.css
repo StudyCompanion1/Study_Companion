@@ -12,6 +12,7 @@
   --primary: #0d6b62;
   --primary-soft: #d6ede9;
   --on-primary: #ffffff;
+  --focus: #1c4fa3;
   --hl-green: #bfe8c6;
   --hl-yellow: #ffe27a;
   --hl-blue: #c3dcf7;
@@ -34,6 +35,7 @@
   --primary: #5fc8b9;
   --primary-soft: #16332f;
   --on-primary: #08201d;
+  --focus: #8fb7ff;
   --hl-green: #1f4a2c;
   --hl-yellow: #5a4a10;
   --hl-blue: #1c3d61;
@@ -56,6 +58,7 @@
   --primary: #00473f;
   --primary-soft: #e0f2ef;
   --on-primary: #ffffff;
+  --focus: #0000cc;
   --hl-green: #b3e6bd;
   --hl-yellow: #ffe066;
   --hl-blue: #b8d6f7;
@@ -71,6 +74,7 @@
    Responsive: "implement [sizes] in rem/em so they grow with the Text size setting" (WCAG 1.4.10).
    Breakpoints/container-query thresholds follow the same rule — see component CSS files. */
 :root {
+  --radius-sm: 0.375rem; /* 6px */
   --radius-md: 0.625rem; /* 10px */
   --radius-full: 9999px;
   --space-1: 0.25rem; /* 4px */

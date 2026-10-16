@@ -1,6 +1,11 @@
-import { useId, useRef, useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { login, register, type User } from '../auth/api.ts'
 import { ThemeSwitcher } from '../components/ThemeSwitcher.tsx'
+import { Icon, type IconName } from '../components/Icon.tsx'
+import { PageHeader } from '../components/PageHeader.tsx'
+import { TextField } from '../components/TextField.tsx'
+import { Button } from '../components/Button.tsx'
+import { Notice } from '../components/Notice.tsx'
 import './AuthForm.css'
 
 type Mode = 'login' | 'register'
@@ -9,6 +14,12 @@ type FieldErrors = Partial<Record<Field, string>>
 
 const MIN_PASSWORD_LENGTH = 8 // matches the minimum already used by the previous register form
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const FEATURES: { icon: IconName; title: string; body: string }[] = [
+  { icon: 'highlighter', title: 'Mark it up', body: 'Highlight and draw on your slides, with colours that mean something.' },
+  { icon: 'speaker', title: 'Hear it', body: 'Have any slide, page, note or transcript read aloud at your speed.' },
+  { icon: 'outline', title: 'See the big picture', body: 'Get an outline of your material and your notes, slide by slide.' },
+]
 
 interface AuthFormProps {
   /** 'login' renders /login, 'register' renders /signup. Defaults to 'login'. */
@@ -35,29 +46,12 @@ function validate(mode: Mode, name: string, email: string, password: string): Fi
 }
 
 export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) {
-  const id = useId()
   const [localMode, setLocalMode] = useState<Mode>(mode)
   const isRegister = localMode === 'register'
   const submittingRef = useRef(false) // blocks rapid double-submits before state re-renders
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
-  const [showPassword, setShowPassword] = useState(false)
-
-  const ids = {
-    name: `${id}-name`,
-    email: `${id}-email`,
-    password: `${id}-password`,
-  }
-  const hintId = `${id}-password-hint`
-  const formErrorId = `${id}-form-error`
-
-  function describedBy(field: Field) {
-    const parts: string[] = []
-    if (field === 'password' && isRegister) parts.push(hintId)
-    if (fieldErrors[field]) parts.push(`${ids[field]}-error`)
-    return parts.length ? parts.join(' ') : undefined
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -103,20 +97,35 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
     setLocalMode(newMode)
     setFormError('')
     setFieldErrors({})
-    setShowPassword(false)
   }
-
-  const passwordType = showPassword ? 'text' : 'password'
 
   return (
     <div className="auth-container">
       <div className="auth-welcome">
-        <div className="auth-welcome__content">
-          <p className="auth-welcome__brand">Study Companion</p>
+        <div className="auth-welcome__brand">
+          <span className="auth-welcome__mark" aria-hidden="true">
+            SC
+          </span>
+          <span className="auth-welcome__name">Study Companion</span>
+        </div>
+
+        <div className="auth-welcome__pitch">
           <p className="auth-welcome__title">Study the way that works for you</p>
           <p className="auth-welcome__subtitle">
             Upload your slides and PDFs, then see them, hear them and reshape them until they stick.
           </p>
+        </div>
+
+        <div className="auth-welcome__features">
+          {FEATURES.map((feature) => (
+            <div className="auth-welcome__feature" key={feature.title}>
+              <Icon name={feature.icon} size={24} />
+              <div className="auth-welcome__feature-text">
+                <p className="auth-welcome__feature-title">{feature.title}</p>
+                <p className="auth-welcome__feature-body">{feature.body}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -126,136 +135,72 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
         </div>
 
         <div className="auth-form-wrapper">
-          <div className="auth-form-header">
-            <h1 className="auth-form-header__title">{isRegister ? 'Sign up' : 'Login'}</h1>
-            <p className="auth-form-header__subtitle">
-              {isRegister ? 'Create an account to keep your work across devices.' : 'Pick up where you left off.'}
-            </p>
-          </div>
+          <PageHeader
+            title={isRegister ? 'Sign up' : 'Login'}
+            summary={isRegister ? 'Create an account to keep your work across devices.' : 'Pick up where you left off.'}
+          />
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
             {isRegister && (
-              <div className="auth-form__field">
-                <label htmlFor={ids.name} className="auth-form__label">
-                  Name
-                </label>
-                <input
-                  id={ids.name}
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  maxLength={100}
-                  className="auth-form__input"
-                  aria-invalid={fieldErrors.name ? true : undefined}
-                  aria-describedby={describedBy('name')}
-                  disabled={submitting}
-                />
-                <FieldError id={`${ids.name}-error`} message={fieldErrors.name} />
-              </div>
-            )}
-
-            <div className="auth-form__field">
-              <label htmlFor={ids.email} className="auth-form__label">
-                Email
-              </label>
-              <input
-                id={ids.email}
-                name="email"
-                type="email"
-                autoComplete="email"
-                inputMode="email"
-                className="auth-form__input"
-                placeholder="name@school.edu"
-                aria-invalid={fieldErrors.email ? true : undefined}
-                aria-describedby={describedBy('email')}
+              <TextField
+                label="Name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                maxLength={100}
+                error={fieldErrors.name}
                 disabled={submitting}
               />
-              <FieldError id={`${ids.email}-error`} message={fieldErrors.email} />
-            </div>
-
-            <div className="auth-form__field">
-              <label htmlFor={ids.password} className="auth-form__label">
-                {isRegister ? 'Create password' : 'Password'}
-              </label>
-              <div className="auth-form__password">
-                <input
-                  id={ids.password}
-                  name="password"
-                  type={passwordType}
-                  autoComplete={isRegister ? 'new-password' : 'current-password'}
-                  maxLength={128}
-                  className="auth-form__input auth-form__input--password"
-                  aria-invalid={fieldErrors.password ? true : undefined}
-                  aria-describedby={describedBy('password')}
-                  disabled={submitting}
-                />
-                <button
-                  type="button"
-                  className="auth-form__reveal"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-pressed={showPassword}
-                  aria-controls={ids.password}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                  <span className="auth-visually-hidden"> password</span>
-                </button>
-              </div>
-              {isRegister && (
-                <p id={hintId} className="auth-form__hint">
-                  Use at least {MIN_PASSWORD_LENGTH} characters.
-                </p>
-              )}
-              <FieldError id={`${ids.password}-error`} message={fieldErrors.password} />
-            </div>
-
-            {formError && (
-              <div role="alert" className="auth-form__notice" id={formErrorId}>
-                <span className="auth-form__error-icon" aria-hidden="true">
-                  ⚠
-                </span>
-                <span>{formError}</span>
-              </div>
             )}
 
-            <button type="submit" className="auth-form__submit" disabled={submitting}>
+            <TextField
+              label="Email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              placeholder="name@school.edu"
+              error={fieldErrors.email}
+              disabled={submitting}
+            />
+
+            <TextField
+              label={isRegister ? 'Create password' : 'Password'}
+              name="password"
+              type="password"
+              showReveal
+              autoComplete={isRegister ? 'new-password' : 'current-password'}
+              maxLength={128}
+              hint={isRegister ? `Use at least ${MIN_PASSWORD_LENGTH} characters.` : undefined}
+              error={fieldErrors.password}
+              disabled={submitting}
+            />
+
+            {formError && <Notice tone="error">{formError}</Notice>}
+
+            <Button type="submit" variant="primary" fullWidth disabled={submitting}>
               {submitting && <span className="auth-form__spinner" aria-hidden="true" />}
               {submitting ? 'Please wait…' : isRegister ? 'Sign up' : 'Login'}
-            </button>
+            </Button>
 
             {!isRegister && (
               <div className="auth-form__alternative">
                 <span className="auth-form__alternative-label">or</span>
-                <button type="button" className="auth-form__guest">
+                <Button type="button" variant="secondary" fullWidth>
                   Guest login
-                </button>
+                </Button>
               </div>
             )}
           </form>
 
           <p className="auth-form-footer">
             {isRegister ? 'Already have an account? ' : 'Don’t have an account? '}
-            <button
-              type="button"
-              className="auth-form-footer__link"
-              onClick={() => toggleMode(isRegister ? 'login' : 'register')}
-            >
+            <Button variant="quiet" size="sm" onClick={() => toggleMode(isRegister ? 'login' : 'register')}>
               {isRegister ? 'Login' : 'Sign up'}
-            </button>
+            </Button>
           </p>
         </div>
       </main>
     </div>
-  )
-}
-
-function FieldError({ id, message }: { id: string; message?: string }) {
-  if (!message) return null
-  return (
-    <p id={id} className="auth-form__error">
-      <span className="auth-form__error-icon" aria-hidden="true">
-        ⚠
-      </span>
-      <span>{message}</span>
-    </p>
   )
 }
