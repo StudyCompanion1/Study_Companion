@@ -20,8 +20,10 @@ package = false
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
 ]
 
 [tool.pytest.ini_options]
 # Lets tests `import app` when run from backend/
 pythonpath = ["."]
+addopts = "--cov=app --cov-fail-under=80"

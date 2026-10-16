@@ -11,4 +11,17 @@ export default defineConfig({
       '/api': 'http://127.0.0.1:8000'
     },
   },
+  test: {
+    coverage: {
+      provider: 'v8',
+      all: true,
+      include: ['src/**/*.{ts,tsx}'],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
+      },
+    },
+  },
 })
