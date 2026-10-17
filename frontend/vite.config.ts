@@ -12,10 +12,14 @@ export default defineConfig({
     },
   },
   test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/setupTests.ts'],
     coverage: {
       provider: 'v8',
       all: true,
       include: ['src/**/*.{ts,tsx}'],
+      // Bootstrap file: renders into a real #root element, nothing to unit test
+      exclude: ['src/main.tsx'],
       thresholds: {
         lines: 80,
         functions: 80,
