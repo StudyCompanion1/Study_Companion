@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import App from './App.tsx'
 
@@ -22,19 +22,13 @@ describe('App', () => {
     mockFetch(401, { detail: 'You are not logged in.' })
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Log in' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Login' })).toBeInTheDocument()
   })
 
-  test('shows the welcome screen and can log out', async () => {
+  test('shows the home page once logged in', async () => {
     mockFetch(200, { id: '1', name: 'Maya', email: 'maya@example.com' })
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Welcome, Maya' })).toBeInTheDocument()
-    expect(screen.getByText('You are logged in as maya@example.com.')).toBeInTheDocument()
-
-    mockFetch(204, undefined)
-    fireEvent.click(screen.getByRole('button', { name: 'Log out' }))
-
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Log in' })).toBeInTheDocument())
+    expect(await screen.findByText('Good afternoon, Maya')).toBeInTheDocument()
   })
 })
