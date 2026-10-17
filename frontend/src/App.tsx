@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import './App.css'
-import AuthForm from './auth/AuthForm.tsx'
-import { getMe, logout, type User } from './auth/api.ts'
+import AuthForm from './pages/AuthForm.tsx'
+import { getMe, type User } from './auth/api.ts'
+import { ThemeProvider } from './theme/ThemeContext'
+import { Home } from './pages/Home'
 
 function App() {
   // undefined while we ask the backend whether someone is already logged in
@@ -13,21 +14,16 @@ function App() {
       .catch(() => setUser(null))
   }, [])
 
-  if (user === undefined) return <p role="status">Loading…</p>
-
-  if (user === null) return <AuthForm onLoggedIn={setUser} />
-
-  // TEMPORARY logged-in screen until the Home Page / Dashboard (UX-3) replaces it
   return (
-    <main>
-      <h1>Welcome, {user.name}</h1>
-      <p>You are logged in as {user.email}.</p>
-      <p>
-        <button type="button" onClick={() => logout().then(() => setUser(null))}>
-          Log out
-        </button>
-      </p>
-    </main>
+    <ThemeProvider>
+      {user === undefined ? (
+        <p role="status">Loading…</p>
+      ) : user === null ? (
+        <AuthForm onLoggedIn={setUser} />
+      ) : (
+        <Home />
+      )}
+    </ThemeProvider>
   )
 }
 
