@@ -71,3 +71,30 @@ This is the initial database foundation for T1.
 
 Additional tables will be added as the Study Companion
 application develops.
+
+## Database Migration
+
+Run migrations from the backend directory:
+
+    uv run python -m db.migrate
+
+The migration runner:
+- Finds numbered SQL migration files.
+- Checks the schema_migrations table.
+- Applies migrations that have not been recorded.
+- Records successfully applied migrations.
+- Skips migrations that have already been applied.
+
+## Verification
+
+The initial database schema was tested on a separate
+PostgreSQL database.
+
+Verified:
+- Successful creation of users and courses tables.
+- Successful INSERT and JOIN operations.
+- Foreign key constraint enforcement.
+- Transaction rollback.
+- Repeatable seed data insertion.
+- Migration version tracking.
+
