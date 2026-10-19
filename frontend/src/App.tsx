@@ -3,6 +3,15 @@ import AuthForm from './pages/AuthForm.tsx'
 import { getMe, type User } from './auth/api.ts'
 import { ThemeProvider } from './theme/ThemeContext'
 import { Home } from './pages/Home'
+import { CollectionsPage } from './collections/CollectionsPage'
+import { collections } from './collections/collectionsData'
+
+function CurrentPage() {
+  if (window.location.pathname === '/collections') {
+    return <CollectionsPage collections={collections} />
+  }
+  return <Home />
+}
 
 function App() {
   // undefined while we ask the backend whether someone is already logged in
@@ -21,7 +30,7 @@ function App() {
       ) : user === null ? (
         <AuthForm onLoggedIn={setUser} />
       ) : (
-        <Home />
+        <CurrentPage />
       )}
     </ThemeProvider>
   )
