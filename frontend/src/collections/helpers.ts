@@ -1,4 +1,5 @@
-import type { Collection, Note } from './types'
+import type { MasteryLevel } from '../components/MasteryBadge'
+import type { Collection, MaterialKind, Note } from './types'
 
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
@@ -58,4 +59,19 @@ export function plural(count: number, word: string): string {
 export function termSummary(list: Collection[]): string {
   const totalNotes = list.reduce((sum, c) => sum + c.noteCount, 0)
   return `${plural(list.length, 'collection')} · ${plural(totalNotes, 'note')}`
+}
+
+/** The words on a MasteryBadge (Figma: strong = Mastered, review = Review soon, low = Needs practice). */
+export function masteryLabel(level: MasteryLevel): string {
+  return { strong: 'Mastered', review: 'Review soon', low: 'Needs practice' }[level]
+}
+
+/** The type word shown with a file: "Slides", "PDF", "Doc", "Audio". */
+export function materialLabel(kind: MaterialKind): string {
+  return { slides: 'Slides', pdf: 'PDF', doc: 'Doc', audio: 'Audio' }[kind]
+}
+
+/** Summary under a collection's title, e.g. "BIO 201 · Autumn 2026 · 12 notes". */
+export function collectionSummary(collection: Collection, noteCount: number): string {
+  return `${collection.code} · ${collection.term} · ${plural(noteCount, 'note')}`
 }

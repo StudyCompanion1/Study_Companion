@@ -73,4 +73,14 @@ export const notes: Note[] = [
     material: { kind: 'slides', fileName: 'Week 1 – Macromolecules.pptx' },
     length: { value: 24, unit: 'slides' }, openedAt: ago(22 * DAY), mastery: 'strong',
   },
+  {
+    id: 'n11', collectionId: 'bio201', title: 'Course overview',
+    material: { kind: 'pdf', fileName: 'BIO 201 Syllabus.pdf' },
+    length: { value: 4, unit: 'pages' }, openedAt: ago(30 * DAY), mastery: null,
+  },
+  {
+    id: 'n12', collectionId: 'bio201', title: 'Lecture 1 recording',
+    material: { kind: 'audio', fileName: 'Lecture 1.m4a' },
+    length: { value: 47, unit: 'min' }, openedAt: ago(31 * DAY), mastery: null,
+  },
 ]

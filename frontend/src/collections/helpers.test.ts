@@ -1,6 +1,17 @@
 import { describe, expect, test } from 'vitest'
 import { collections, notes, MOCK_NOW } from './collectionsData'
-import { formatLength, formatRelative, groupByTerm, notesFor, plural, sortByOpened, termSummary } from './helpers'
+import {
+  collectionSummary,
+  formatLength,
+  formatRelative,
+  groupByTerm,
+  masteryLabel,
+  materialLabel,
+  notesFor,
+  plural,
+  sortByOpened,
+  termSummary,
+} from './helpers'
 import type { Collection } from './types'
 
 const NOW = new Date('2026-10-13T16:00:00')
@@ -79,7 +90,7 @@ describe('sortByOpened', () => {
 
 describe('notesFor', () => {
   test('only that collection’s notes', () => {
-    expect(notesFor('bio201', notes)).toHaveLength(10)
+    expect(notesFor('bio201', notes)).toHaveLength(12)
     expect(notesFor('psy101', notes)).toHaveLength(0)
   })
 })
@@ -100,5 +111,29 @@ describe('mock data matches Figma labels', () => {
     expect(formatRelative(collections[0].updatedAt, MOCK_NOW)).toBe('2 h ago')
     expect(formatRelative(collections[1].updatedAt, MOCK_NOW)).toBe('Yesterday')
     expect(formatRelative(notes[9].openedAt, MOCK_NOW)).toBe('3 weeks ago')
+  })
+})
+
+describe('labels for screen 2', () => {
+  test('masteryLabel uses the Figma words', () => {
+    expect(masteryLabel('strong')).toBe('Mastered')
+    expect(masteryLabel('review')).toBe('Review soon')
+    expect(masteryLabel('low')).toBe('Needs practice')
+  })
+
+  test('materialLabel', () => {
+    expect(materialLabel('slides')).toBe('Slides')
+    expect(materialLabel('pdf')).toBe('PDF')
+    expect(materialLabel('doc')).toBe('Doc')
+    expect(materialLabel('audio')).toBe('Audio')
+  })
+
+  test('collectionSummary matches the Figma subtitle', () => {
+    expect(collectionSummary(collections[0], 12)).toBe('BIO 201 · Autumn 2026 · 12 notes')
+    expect(collectionSummary(collections[3], 1)).toBe('PSY 101 · Autumn 2026 · 1 note')
+  })
+
+  test('BIO 201 has as many notes as its card says', () => {
+    expect(notesFor('bio201', notes)).toHaveLength(collections[0].noteCount)
   })
 })

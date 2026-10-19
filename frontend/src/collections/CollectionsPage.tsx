@@ -4,6 +4,7 @@ import { SectionHeader } from '../components/SectionHeader'
 import { ThemeSwitcher } from '../components/ThemeSwitcher'
 import { CollectionCard } from './CollectionCard'
 import { groupByTerm, termSummary } from './helpers'
+import { collectionHref } from './routes'
 import type { Collection } from './types'
 import './CollectionsPage.css'
 
@@ -37,8 +38,7 @@ export function CollectionsPage({ collections, now }: { collections: Collection[
                 <ul className="collections__grid">
                   {inTerm.map((collection) => (
                     <li key={collection.id}>
-                      {/* Real route once the team picks a router; App.tsx has none yet. */}
-                      <CollectionCard collection={collection} href={`/collections/${collection.id}`} now={now} />
+                      <CollectionCard collection={collection} href={collectionHref(collection.id)} now={now} />
                     </li>
                   ))}
                 </ul>
