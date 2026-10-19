@@ -13,3 +13,6 @@ frontend/coverage/
 
 # Local SQLite database
 *.db
+
+# test data
+test_data/
