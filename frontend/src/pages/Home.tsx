@@ -6,6 +6,7 @@ import { List } from '../components/List'
 import { PracticeRow, type PracticeTopic } from '../components/PracticeRow'
 import { QuizRow, type QuizResult } from '../components/QuizRow'
 import { ThemeSwitcher } from '../components/ThemeSwitcher'
+import Chatbot from '../components/Chatbot'
 import './Home.css'
 
 const sessions: Session[] = [
@@ -69,6 +70,10 @@ export function Home() {
               </List>
             </section>
           </div>
+
+          <section className="home__section">
+            <Chatbot />
+          </section>
         </div>
       </main>
     </div>
