@@ -1,0 +1,64 @@
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.page-header__text {
+  display: flex;
+  flex: 1 0 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.page-header__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 2rem; /* 32px */
+  line-height: 2.5rem; /* 40px */
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+.page-header__summary {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.75rem; /* 28px */
+  letter-spacing: 0.01em;
+  color: var(--ink-muted);
+}
+
+.page-header__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem; /* 44px — min, not fixed, so a wrapped label at large text sizes can't clip */
+  flex-shrink: 0;
+  padding: 0.5rem var(--space-4);
+  background: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-md);
+  color: var(--on-primary);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9375rem; /* 15px */
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+/* Tier 2 · Component's own width — Foundations → Responsive: PageHeader stacks the action under
+   the title below 560px (35rem) of available width. */
+@container page (width < 35rem) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-header__action {
+    align-self: flex-start;
+  }
+}

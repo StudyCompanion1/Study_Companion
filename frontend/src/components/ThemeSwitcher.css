@@ -1,0 +1,31 @@
+.theme-switcher {
+  display: inline-flex;
+  gap: 0.125rem; /* 2px */
+  padding: 0.125rem;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.theme-switcher__option {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem; /* 14px — Foundations → Type: "14px is the floor" */
+  line-height: 1.25rem; /* 20px */
+  color: var(--ink-muted);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--radius-md) - 2px);
+  padding: 0.375rem 0.625rem; /* 6px 10px */
+  cursor: pointer;
+}
+
+.theme-switcher__option.is-active {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.theme-switcher__option:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
