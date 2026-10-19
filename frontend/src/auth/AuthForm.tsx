@@ -1,5 +1,5 @@
 import { useId, useState, type FormEvent } from 'react'
-import { login, register, type User } from './api.ts'
+import { continueAsGuest, login, register, type User } from './api.ts'
 import './AuthForm.css'
 
 type Mode = 'login' | 'register'
@@ -31,6 +31,22 @@ export default function AuthForm({ onLoggedIn }: { onLoggedIn: (user: User) => v
       onLoggedIn(user)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setSubmitting(false)
+    }
+  }
+
+  async function handleGuest() {
+
+    setError('')
+    setSubmitting(true)
+    try {
+      onLoggedIn(await continueAsGuest())
+    } catch (err) {
+      setError(
+      err instanceof TypeError
+        ? 'We couldn’t reach the server. Check your connection and try again.'
+        : 'We couldn’t start a guest session. Please try again.',
+      )
       setSubmitting(false)
     }
   }
@@ -91,6 +107,7 @@ export default function AuthForm({ onLoggedIn }: { onLoggedIn: (user: User) => v
       >
         {isRegister ? 'Already have an account? Log in' : 'New here? Create an account'}
       </button>
+      <button type="button" className="auth-form__guest" onClick={handleGuest} disabled={submitting}>Guest login</button>
     </main>
   )
 }
