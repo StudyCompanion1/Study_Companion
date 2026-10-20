@@ -18,8 +18,8 @@ export default defineConfig({
       provider: 'v8',
       all: true,
       include: ['src/**/*.{ts,tsx}'],
-      // Bootstrap file: renders into a real #root element, nothing to unit test
-      exclude: ['src/main.tsx'],
+      // Bootstrap files: render into a real #root element, nothing to unit test
+      exclude: ['src/main.tsx', 'src/collections/preview.tsx'],
       thresholds: {
         lines: 80,
         functions: 80,
