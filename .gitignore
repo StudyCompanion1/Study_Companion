@@ -6,9 +6,13 @@ __pycache__/
 
 # Node
 node_modules/
+frontend/coverage/
 
 # Env
 .env
 
 # Local SQLite database
 *.db
+
+# test data
+test_data/

@@ -13,8 +13,11 @@
     "dev:open": "concurrently -k -n api,web -c blue,green \"npm:dev:backend\" \"npm run dev -w frontend -- --open\"",
     "install:all": "npm install && cd backend && uv sync",
     "test:backend": "cd backend && uv run pytest",
+    "test:backend:coverage": "cd backend && uv run pytest --cov-report=term-missing",
     "test:frontend": "npm run test -w frontend",
-    "test": "concurrently -n api,web -c blue,green \"npm:test:backend\" \"npm:test:frontend\""
+    "test:frontend:coverage": "npm run test -w frontend -- --coverage.reporter=text --coverage.reporter=html",
+    "test": "concurrently -n api,web -c blue,green \"npm:test:backend\" \"npm:test:frontend\"",
+    "test:coverage": "concurrently -n api,web -c blue,green \"npm:test:backend:coverage\" \"npm:test:frontend:coverage\""
   },
   "devDependencies": {
     "concurrently": "^10.0.5"
