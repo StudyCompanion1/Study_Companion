@@ -2,12 +2,13 @@ import type { IconName } from './Icon'
 import { Icon } from './Icon'
 import './NavRail.css'
 
-const ITEMS: { label: string; icon: IconName }[] = [
-  { label: 'Home', icon: 'home' },
-  { label: 'Collections', icon: 'collections' },
-  { label: 'Quizzes', icon: 'quiz' },
-  { label: 'Practice', icon: 'target' },
-  { label: 'Search', icon: 'search' },
+// href: pages that exist get a real address; the rest stay '#' until they're built.
+const ITEMS: { label: string; icon: IconName; href: string }[] = [
+  { label: 'Home', href: '/', icon: 'home' },
+  { label: 'Collections', href: '/collections', icon: 'collections' },
+  { label: 'Quizzes', href: '#', icon: 'quiz' },
+  { label: 'Practice', href: '#', icon: 'target' },
+  { label: 'Search', href: '#', icon: 'search' },
 ]
 
 export function NavRail({ active = 'Home' }: { active?: string }) {
@@ -22,7 +23,7 @@ export function NavRail({ active = 'Home' }: { active?: string }) {
           return (
             <a
               key={item.label}
-              href="#"
+              href={item.href}
               className="nav-rail__item"
               data-nav={item.label.toLowerCase()}
               aria-current={isActive ? 'page' : undefined}

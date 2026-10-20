@@ -3,9 +3,19 @@ import AuthForm from './pages/AuthForm.tsx'
 import { getMe, type User } from './auth/api.ts'
 import { ThemeProvider } from './theme/ThemeContext'
 import { Home } from './pages/Home'
+import { CollectionsRoute } from './collections/CollectionsRoute'
+import { matchCollectionsRoute } from './collections/routes'
+
+
+function CurrentPage() {
+  const collectionsRoute = matchCollectionsRoute(window.location.pathname)
+  if (collectionsRoute) {
+    return <CollectionsRoute route={collectionsRoute} />
+  }
+  return <Home />
+}
 
 function App() {
-  // undefined while we ask the backend whether someone is already logged in
   const [user, setUser] = useState<User | null | undefined>(undefined)
 
   useEffect(() => {
@@ -21,7 +31,7 @@ function App() {
       ) : user === null ? (
         <AuthForm onLoggedIn={setUser} />
       ) : (
-        <Home />
+        <CurrentPage />
       )}
     </ThemeProvider>
   )

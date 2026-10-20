@@ -1,0 +1,79 @@
+/* Same shell as pages/Home.css, renamed so nothing in Home is touched. */
+
+.collections {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--surface);
+}
+
+.collections__main {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.collections__page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: var(--page-max);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  box-sizing: border-box;
+  container-type: inline-size;
+  container-name: page;
+}
+
+.collections__theme-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.collections__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* A real list for screen readers ("list, 4 items"), styled as a grid.
+   Figma: three per row on desktop, and wider screens never add columns. So each column is at
+   least a third of the row (max 3) and at least 18rem (drops to 2, then 1, on narrow screens). */
+.collections__grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(max(18rem, calc((100% - 2 * var(--space-4)) / 3)), 1fr)
+  );
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.collections__grid > li {
+  display: flex;
+  flex-direction: column;
+}
+
+.collections__grid > li > .collection-card {
+  flex: 1;
+}
+
+.collections__empty {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.75rem; /* 28px */
+  color: var(--ink-muted);
+}
+
+@media (width < 48rem) {
+  .collections__page {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+    padding-bottom: calc(var(--space-4) + 6rem); /* clears the bottom NavRail on phones */
+  }
+}
