@@ -1,7 +1,6 @@
 import { Icon } from '../components/Icon'
 import { formatRelative, plural } from './helpers'
 import type { Collection } from './types'
-import './collections-tokens.css'
 import './CollectionCard.css'
 
 /* Follows the SessionCard pattern: one <a> wrapping a colour band and a body.
