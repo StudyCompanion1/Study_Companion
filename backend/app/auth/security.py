@@ -10,6 +10,7 @@ from app.config import settings
 
 COOKIE_NAME = "access_token"
 ALGORITHM = "HS256"
+GUEST_TOKEN_EXPIRATION = 24 * 60 # guest sessions last one day
 
 # Argon2id: passwords are stored as one-way hashes, never as the password itself (NF1 Security)
 password_hasher = PasswordHash.recommended()
@@ -27,8 +28,9 @@ def verify_password(password: str, password_hash: str) -> bool:
     return password_hasher.verify(password, password_hash)
 
 
-def create_access_token(user_id: uuid.UUID) -> str:
-    expires = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
+def create_access_token(user_id: uuid.UUID, expire_minutes: int | None = None) -> str:
+    minutes = expire_minutes if expire_minutes is not None else settings.access_token_expire_minutes
+    expires = datetime.now(UTC) + timedelta(minutes=minutes)
     return jwt.encode({"sub": str(user_id), "exp": expires}, settings.secret_key, algorithm=ALGORITHM)
 
 
