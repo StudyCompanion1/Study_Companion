@@ -1,3 +1,4 @@
+//import {useState, useEffect } from 'react';
 import { NavRail } from '../components/NavRail'
 import { PageHeader } from '../components/PageHeader'
 import { SectionHeader } from '../components/SectionHeader'
@@ -27,13 +28,22 @@ const quizzes: QuizResult[] = [
 ]
 
 export function Home() {
+  //const [fontSize, setFontSize] = useState<number>(16);
+  //useEffect(() => { document.documentElement.style.fontSize = `${fontSize}px`;}, [fontSize]);
+
   return (
-    <div className="home">
+    <div className="home"> 
       <NavRail active="Home" />
       <main className="home__main">
         <div className="home__page">
           <div className="home__theme-row">
             <ThemeSwitcher />
+
+          {/*<div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
+          //<button onClick={() => setFontSize((prev) => Math.max(prev - 2, 12))}>Decrease Font Size</button>
+          //<span>{fontSize}px</span>
+          //<button onClick={() => setFontSize((prev) => Math.min(prev + 2, 32))}>Increase Font Size</button>
+          //</div> */}
           </div>
           <PageHeader
             title="Good afternoon, Maya"

@@ -17,6 +17,9 @@ function CurrentPage() {
 
 function App() {
   const [user, setUser] = useState<User | null | undefined>(undefined)
+  const [fontSize, setFontSize] = useState<number>(16)
+
+  useEffect(() => { document.documentElement.style.fontSize = `${fontSize}px`}, [fontSize])
 
   useEffect(() => {
     getMe()
@@ -31,7 +34,17 @@ function App() {
       ) : user === null ? (
         <AuthForm onLoggedIn={setUser} />
       ) : (
+        <>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%', justifyContent: 'flex-end', padding: '16px 32px 0px 0px' }}>
+          <button onClick={() => setFontSize((prev) => Math.max(prev - 2, 12))}>Decrease Font Size</button>
+          <span>{fontSize}px</span>
+          <button onClick={() => setFontSize((prev) => Math.min(prev + 2, 32))}>Increase Font Size</button>
+          </div>
+
+
         <CurrentPage />
+        </>
       )}
     </ThemeProvider>
   )
