@@ -1,7 +1,8 @@
 import { useTheme } from '../theme/ThemeContext';
-import { useId } from 'react';
+import { useId, useState } from 'react'
 import type { Settings } from './Settings';
 import './SettingsPanel.css';
+import { logout } from '../auth/api'
 
 export interface SettingsPanelProps {
   value: Settings;
@@ -13,6 +14,22 @@ export default function SettingsPanel({ value, onChange, onClose }: SettingsPane
   const { theme, setTheme } = useTheme();
   const id = useId();
   const update = (patch: Partial<Settings>) => onChange({ ...value, ...patch });
+  const [loggingOut, setLoggingOut] = useState(false)
+  const [logoutError, setLogoutError] = useState('')
+
+async function handleLogout() {
+  setLoggingOut(true)
+  setLogoutError('')
+
+  try {
+    await logout()
+    window.location.assign('/')
+  } catch {
+    setLogoutError('Could not log out. Please try again.')
+    setLoggingOut(false)
+  }
+}
+
   return <aside className="sc-settings" aria-labelledby={`${id}-title`}>
     <header className="sc-settings__header"><h2 id={`${id}-title`}>Settings / Accessibility</h2><button className="sc-settings__close" type="button" onClick={onClose} aria-label="Close settings"><span aria-hidden="true">×</span></button></header>
     <div className="sc-settings__body">
@@ -66,5 +83,18 @@ export default function SettingsPanel({ value, onChange, onClose }: SettingsPane
   </p>
 </section>
     </div>
+
+    <footer className="sc-settings__footer">
+      {logoutError && <p role="alert">{logoutError}</p>}
+
+      <button
+        type="button"
+        className="sc-settings__option"
+        onClick={handleLogout}
+        disabled={loggingOut}
+      >
+        {loggingOut ? 'Logging out…' : 'Log out'}
+      </button>
+    </footer>
   </aside>;
 }
