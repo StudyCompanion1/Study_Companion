@@ -101,6 +101,22 @@ Follow the [Gemini API Key Instructions](https://ai.google.dev/gemini-api/docs/a
 GEMINI_API_KEY=your_api_key_here
 ```
 
+### Rate Limiting
+
+To apply rate limiting to your function that calls on gemini you can import 
+
+```
+from ai_processing.utils.retry_ai_decorator import retry
+```
+
+then add in the decorator
+
+```
+@retry(max_attempts=6, delay=2.0, backoff=2.0)
+```
+
+on top of your function, adjust the parameters as needed.
+
 ### FastAPI Endpoints
 
 **POST `/api/analyze` — Keyword and Concept Extraction**
