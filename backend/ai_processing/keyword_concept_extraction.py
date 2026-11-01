@@ -18,16 +18,18 @@ from PIL import Image, UnidentifiedImageError
 
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
+from ai_processing.utils.retry_ai_decorator import retry
 
 
 # config
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(BACKEND_ROOT / ".env")
 
-MODEL = os.getenv(
-    "GEMINI_MODEL",
-    "gemini-3.5-flash-lite"
-)
+MODEL = "gemini-3.5-flash-lite"
+
+FALLBACK_MODEL = [
+    "gemini-3.1-flash-lite"
+]
 
 
 def get_gemini_client():
@@ -38,6 +40,40 @@ def get_gemini_client():
         raise RuntimeError("GEMINI_API_KEY is not configured")
 
     return genai.Client(api_key=api_key)
+
+
+# automatic model fallback
+def _generate_with_fallback(contents) -> str:
+    """Try the primary Gemini model, fall back on failure, and raise if all fail to trigger retry."""
+
+    models = [MODEL, *FALLBACK_MODEL]
+    last_error = None
+
+    with get_gemini_client() as client:
+
+        for model in models:
+
+            try:
+                response = client.models.generate_content(
+                    model=model,
+                    contents=contents
+                )
+
+                result = (response.text or "").strip()
+
+                if not result:
+                    raise ValueError(
+                        "Gemini returned an empty response."
+                    )
+
+                return result
+
+            except Exception as exc:
+                last_error = exc
+
+    raise RuntimeError(
+        "All Gemini models failed."
+    ) from last_error
 
 
 # supported file extensions
@@ -103,7 +139,7 @@ def _normalize_image(
     if extension in IMAGE_MIME_TYPES:
         return image_bytes, IMAGE_MIME_TYPES[extension]
 
-    #svg to png
+    # svg to png
     if extension == ".svg" or mime_type == "image/svg+xml":
 
         import cairosvg
@@ -128,7 +164,8 @@ def _normalize_image(
         return output.getvalue(), "image/png"
 
 
-# geminin image ocr
+# gemini image ocr
+@retry(max_attempts=6, delay=2.0, backoff=2.0)
 def _ocr_image(
     image_bytes: bytes,
     extension: str,
@@ -144,26 +181,21 @@ def _ocr_image(
         mime_type
     )
 
-    # Keep the Gemini client alive for the entire request.
-    with get_gemini_client() as client:
-        response = client.models.generate_content(
-            model=MODEL,
-            contents=[
-                (
-                    "Transcribe all readable text in this image. "
-                    "Preserve headings, lists, and text order "
-                    "where possible. Do not guess missing text. "
-                    "If there is no readable text, respond only "
-                    "with NO_TEXT_FOUND."
-                ),
-                types.Part.from_bytes(
-                    data=data,
-                    mime_type=mime
-                ),
-            ],
-        )
-
-    extracted = (response.text or "").strip()
+    extracted = _generate_with_fallback(
+        contents=[
+            (
+                "Transcribe all readable text in this image. "
+                "Preserve headings, lists, and text order "
+                "where possible. Do not guess missing text. "
+                "If there is no readable text, respond only "
+                "with NO_TEXT_FOUND."
+            ),
+            types.Part.from_bytes(
+                data=data,
+                mime_type=mime
+            ),
+        ]
+    )
 
     if extracted == "NO_TEXT_FOUND":
         return ""
@@ -171,7 +203,7 @@ def _ocr_image(
     return extracted
 
 
-# embedd the images found in word and pptx
+# embed the images found in word and pptx
 def _ocr_embedded_image(
     blob: bytes,
     filename: str,
@@ -504,6 +536,7 @@ do not invent one.
 
 
 # gemini generation template
+@retry(max_attempts=6, delay=2.0, backoff=2.0)
 def _generate(
     file_path: str,
     instructions: str
@@ -513,23 +546,12 @@ def _generate(
     text = extract_document_text(file_path)
 
     # Generate the requested output
-    # Keep the Gemini client alive until generation finishes.
-    with get_gemini_client() as client:
-        response = client.models.generate_content(
-            model=MODEL,
-            contents=(
-                f"{instructions}\n\n"
-                f"<document>\n{text}\n</document>"
-            ),
+    return _generate_with_fallback(
+        contents=(
+            f"{instructions}\n\n"
+            f"<document>\n{text}\n</document>"
         )
-
-    if not response.text or not response.text.strip():
-
-        raise ValueError(
-            "Gemini returned an empty response."
-        )
-
-    return response.text.strip()
+    )
 
 
 # api #1 - concepts and keywords
