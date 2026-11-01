@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react'
-import { login, register, type User } from '../auth/api.ts'
+import { continueAsGuest, login, register, type User } from '../auth/api.ts'
 import { ThemeSwitcher } from '../components/ThemeSwitcher.tsx'
 import { Icon, type IconName } from '../components/Icon.tsx'
 import { PageHeader } from '../components/PageHeader.tsx'
@@ -92,6 +92,31 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
       setSubmitting(false)
     }
   }
+
+  async function handleGuest() {
+  
+    if (submittingRef.current) return
+    submittingRef.current = true
+    setSubmitting(true)
+    setFormError('')
+    setFieldErrors({})
+  
+    try {
+
+      onLoggedIn(await continueAsGuest())
+    } catch (err) {
+    
+      setFormError(
+      
+        err instanceof TypeError
+          ? 'We couldn’t reach the server. Check your connection and try again.'
+          : 'We couldn’t start a guest session. Please try again.',
+      )
+    
+      submittingRef.current = false
+      setSubmitting(false)
+    }
+  } 
 
   function toggleMode(newMode: Mode) {
     setLocalMode(newMode)
@@ -186,7 +211,7 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
             {!isRegister && (
               <div className="auth-form__alternative">
                 <span className="auth-form__alternative-label">or</span>
-                <Button type="button" variant="secondary" fullWidth>
+                <Button type="button" onClick={handleGuest} disabled={submitting} variant="secondary" fullWidth>
                   Guest login
                 </Button>
               </div>

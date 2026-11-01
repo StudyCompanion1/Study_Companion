@@ -10,10 +10,14 @@ from sqlmodel import select
 
 from app.auth.dependencies import CurrentUser
 from app.auth.schemas import LoginRequest, RegisterRequest, UserPublic
-from app.auth.security import COOKIE_NAME, DUMMY_HASH, create_access_token, hash_password, verify_password
+from app.auth.security import COOKIE_NAME, DUMMY_HASH, GUEST_TOKEN_EXPIRATION, create_access_token, hash_password, verify_password
+from app.auth.guests import delete_expired_guests
 from app.config import settings
 from app.db import SessionDep
-from app.models import User
+from app.models import User, UserRole
+
+import secrets
+from uuid import uuid4
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -25,11 +29,12 @@ COOKIE_OPTIONS = {
 }
 
 
-def set_login_cookie(response: Response, user: User) -> None:
+def set_login_cookie(response: Response, user: User, expire_minutes: int | None = None) -> None:
+    minutes = expire_minutes if expire_minutes is not None else settings.access_token_expire_minutes
     response.set_cookie(
         COOKIE_NAME,
-        create_access_token(user.id),
-        max_age=settings.access_token_expire_minutes * 60,
+        create_access_token(user.id, minutes),
+        max_age=minutes * 60,
         **COOKIE_OPTIONS,
     )
 
@@ -68,4 +73,15 @@ def logout(response: Response) -> None:
 @router.get("/me", response_model=UserPublic)
 def me(user: CurrentUser) -> User:
     """The logged-in user, or 401 if nobody is logged in."""
+    return user
+
+@router.post("/guest", response_model=UserPublic, status_code=status.HTTP_201_CREATED)
+def guest(session: SessionDep, response: Response) -> User:
+    delete_expired_guests(session)
+    # Creates a temporary guest user and logs them in. Guests are restricted from using certain features like AI
+    user = User(name = "Guest", email = f"guest-{uuid4().hex}@guest.invalid",  password_hash = hash_password(secrets.token_urlsafe(32)), role = UserRole.GUEST)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    set_login_cookie(response, user, GUEST_TOKEN_EXPIRATION)
     return user

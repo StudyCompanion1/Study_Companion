@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { ApiError, errorMessage, getMe, login } from './api.ts'
+import { ApiError, errorMessage, getMe, login, logout, register } from './api.ts'
 
 function mockFetch(status: number, body: unknown) {
   const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status }))
@@ -67,5 +67,31 @@ describe('login', () => {
   test('rejects with the backend message on bad credentials', async () => {
     mockFetch(401, { detail: 'Incorrect email or password.' })
     await expect(login('maya@example.com', 'wrong')).rejects.toThrow('Incorrect email or password.')
+  })
+})
+
+describe('register', () => {
+  test('posts JSON to the register endpoint', async () => {
+    const fetchMock = mockFetch(201, { id: '1', name: 'Maya' })
+    await register('Maya', 'maya@example.com', 'secret-password')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/auth/register')
+    expect(JSON.parse(init.body)).toEqual({ name: 'Maya', email: 'maya@example.com', password: 'secret-password' })
+  })
+
+  test('rejects with the backend message on a duplicate email', async () => {
+    mockFetch(409, { detail: 'An account with this email already exists.' })
+    await expect(register('Maya', 'maya@example.com', 'secret-password')).rejects.toThrow(
+      'An account with this email already exists.',
+    )
+  })
+})
+
+describe('logout', () => {
+  test('posts to the logout endpoint and returns nothing', async () => {
+    const fetchMock = mockFetch(204, undefined)
+    await expect(logout()).resolves.toBeUndefined()
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/auth/logout')
+    expect(fetchMock.mock.calls[0][1].method).toBe('POST')
   })
 })
