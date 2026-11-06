@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [dev, qa, prod]
+    branches: [dev, qa, main]
   pull_request:
-    branches: [dev, qa, prod]
+    branches: [dev, qa, main]
 
 jobs:
   backend:
@@ -23,3 +23,49 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npm run test:frontend
+
+  # Only runs after both test jobs pass, and only on main (prod). dev/qa stay local-only (TI-2).
+  deploy:
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - name: Build and push backend image
+        working-directory: backend
+        run: |
+          IMAGE="${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPO }}:${{ github.sha }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build and upload frontend
+        run: |
+          npm ci
+          npm run build -w frontend
+          tar -czf frontend.tar.gz -C frontend/dist .
+          aws s3 cp frontend.tar.gz "s3://${{ vars.FRONTEND_BUCKET }}/frontend.tar.gz"
+
+      - name: Deploy on EC2 via SSM
+        run: |
+          aws ssm send-command \
+            --instance-ids "${{ vars.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[\"/opt/study-companion/deploy.sh $IMAGE s3://${{ vars.FRONTEND_BUCKET }}/frontend.tar.gz\"]"

@@ -40,11 +40,24 @@ The backend stores data in a local SQLite file (`backend/study_companion.db`, gi
 
 SQLite is a temporary stand-in. No app code depends on it, so the switch is configuration only:
 
-1. Add the Postgres driver: `cd backend && uv add "psycopg[binary]"`
+1. The Postgres driver (`psycopg[binary]`) is already a backend dependency.
 2. Set the connection string from TI-1 in `backend/.env` (never commit it):
    `DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME`
 3. Create the tables: today the backend creates missing tables on startup (`create_db_and_tables` in `backend/app/db.py`). Once DA-1 adds versioned migrations, those replace that step.
 4. Run `npm run test:backend`, then log in through the app once to confirm.
+
+## Deploying (TI-2)
+
+Only `main` deploys, on every push that passes CI (`.github/workflows/tests.yml`'s `deploy` job). `dev`/`qa` stay local-only.
+
+Infra, one-time:
+- **RDS** — Postgres, private, security group open to the EC2 instance's SG only on 5432.
+- **S3** — one bucket for uploaded course material (`S3_BUCKET`/`AWS_REGION` in `backend/.env`; code in `backend/app/storage.py`).
+- **ECR** — one repo for the backend image (`backend/Dockerfile`).
+- **EC2** — runs the backend container (`docker run`, see `infra/deploy.sh`) behind Caddy, which also serves the built frontend as static files and reverse-proxies `/api/*` to the container. One origin, so no CORS/cookie cross-site config is needed. Secrets (`SECRET_KEY`, `DATABASE_URL`, `GEMINI_API_KEY`, `S3_BUCKET`) live in `/opt/study-companion/backend.env` on the box, sourced from SSM Parameter Store — never in the repo or in CI.
+- CI assumes an AWS role via OIDC (no long-lived AWS keys in GitHub secrets) and deploys by `aws ssm send-command` running `infra/deploy.sh` on the instance — no SSH key needed.
+
+Repo variables the `deploy` job reads: `AWS_REGION`, `AWS_ROLE_ARN`, `ECR_REPO`, `EC2_INSTANCE_ID`, `FRONTEND_BUCKET`.
 
 ## Authentication (DA-2)
 

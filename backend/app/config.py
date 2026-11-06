@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     # True once the site is served over HTTPS (staging/production); must be False for http://localhost
     cookie_secure: bool = False
 
+    # S3 bucket uploaded course material is stored in (see app/storage.py). Empty until TI-2 is done.
+    s3_bucket: str = ""
+    aws_region: str = "us-east-1"
+
 
 settings = Settings()
 
