@@ -1,0 +1,66 @@
+# 
+# ============================================================
+# Study Companion - Local Database Infrastructure
+# ============================================================
+# Purpose:
+#   Run PostgreSQL locally using Docker Compose.
+#
+# Used for:
+#   - Local backend development
+#   - Database initialization
+#   - Testing database connections
+#
+# Note:
+#   This configuration is for local development only.
+#   Production database hosting is planned on AWS RDS.
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # PostgreSQL Database Service
+  # ----------------------------------------------------------
+  db:
+
+    # PostgreSQL version 17.
+    # Confirm compatibility with the team's AWS RDS version.
+    image: postgres:17
+
+    # Restart automatically unless manually stopped.
+    restart: unless-stopped
+
+    # Database configuration.
+    # The password is loaded from the local .env file.
+    environment:
+      POSTGRES_USER: study_companion
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: study_companion
+
+    # Expose PostgreSQL to applications on this computer.
+    # 5432 is PostgreSQL's default port.
+    # 127.0.0.1 prevents access from other computers.
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    # Store database files in a persistent Docker volume.
+    # Data survives container restarts and recreation.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Check whether PostgreSQL is accepting connections.
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U study_companion -d study_companion
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+# ------------------------------------------------------------
+# Persistent Storage
+# ------------------------------------------------------------
+# Docker manages this volume separately from the container.
+# Do not run 'docker compose down -v' unless you intend
+# to delete the locally stored database data.
+volumes:
+  postgres_data:
