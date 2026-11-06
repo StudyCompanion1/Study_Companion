@@ -6,7 +6,7 @@ export type User = {
   id: string
   name: string
   email: string
-  role: 'student' | 'admin' | 'instructor'
+  role: 'student' | 'admin' | 'instructor' | 'guest'
   created_at: string
 }
 
@@ -68,4 +68,8 @@ export function register(name: string, email: string, password: string): Promise
 
 export function logout(): Promise<void> {
   return request('/logout', { method: 'POST' })
+}
+
+export function continueAsGuest(): Promise<User> {
+  return request ('/guest', {method: 'POST'})
 }

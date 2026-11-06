@@ -10,6 +10,7 @@ class UserRole(StrEnum):
     STUDENT = "student"
     ADMIN = "admin"
     INSTRUCTOR = "instructor"
+    GUEST = "guest"
 
 
 class User(SQLModel, table=True):

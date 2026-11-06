@@ -1,0 +1,42 @@
+/* Figma FileChip (15:94–15:109). */
+
+.file-chip {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-1) 0.625rem; /* 4px 10px */
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-muted);
+}
+
+.file-chip > svg {
+  flex-shrink: 0;
+}
+
+.file-chip__kind {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.file-chip__name {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-body);
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

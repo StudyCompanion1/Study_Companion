@@ -1,0 +1,8 @@
+/* Screen 2 extras; the page shell comes from CollectionsPage.css.
+   Figma "head": breadcrumb, then 8px, then the PageHeader. */
+
+.collection__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
