@@ -104,6 +104,16 @@ Follow the [Gemini API Key Instructions](https://ai.google.dev/gemini-api/docs/a
 GEMINI_API_KEY=your_api_key_here
 ```
 
+### Brave API Key
+
+Add your Brave API key to a `.env` file in the backend folder.
+
+Follow the [Brave API Key Instructions](https://api-dashboard.search.brave.com/documentation/guides/authentication).
+
+```env
+BRAVE_API_KEY=your_api_key_here
+```
+
 ### Rate Limiting
 
 To apply rate limiting to your function that calls on gemini you can import
