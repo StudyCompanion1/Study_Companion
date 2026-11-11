@@ -4,7 +4,6 @@ Full-stack app: FastAPI backend (`backend/`) + React/Vite frontend (`frontend/`)
 
 __NOTE__: For the dedicated QA testing environment please use your own machine, by running the commands below [go to Setup](#setup) for more the full steps and make sure sure to have the [requirements](#requirements) pre configured.
 
-
 ## Structure
 
 ```tree
