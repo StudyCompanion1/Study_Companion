@@ -68,4 +68,4 @@ jobs:
           aws ssm send-command \
             --instance-ids "${{ vars.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
-            --parameters "commands=[\"/opt/study-companion/deploy.sh $IMAGE s3://${{ vars.FRONTEND_BUCKET }}/frontend.tar.gz\"]"
+            --parameters "commands=[\"AWS_REGION=${{ vars.AWS_REGION }} /opt/study-companion/deploy.sh $IMAGE s3://${{ vars.FRONTEND_BUCKET }}/frontend.tar.gz\"]"
