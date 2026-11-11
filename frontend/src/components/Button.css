@@ -1,0 +1,78 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 1.5px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.button--md {
+  min-height: 2.75rem; /* 44px target */
+  padding: 0.5rem var(--space-4);
+  font-size: 0.9375rem; /* 15px, Text/label */
+  line-height: 1.25rem;
+}
+
+.button--sm {
+  min-height: 2.25rem; /* 36px, dense rows only */
+  padding: 0.5rem var(--space-3);
+  font-size: 0.875rem; /* 14px, Text/caption-strong */
+  line-height: 1.25rem;
+}
+
+.button--primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.button--primary:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.button--secondary {
+  background: var(--surface-raised);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.button--secondary:hover:not(:disabled) {
+  background: var(--surface-sunken);
+}
+
+.button--quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--primary);
+}
+
+.button--quiet:hover:not(:disabled) {
+  background: var(--surface-sunken);
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 5px var(--focus);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button--full {
+  width: 100%;
+}
+
+.button__label {
+  white-space: normal;
+}

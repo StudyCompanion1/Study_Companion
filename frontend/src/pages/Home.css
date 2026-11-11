@@ -1,0 +1,79 @@
+.home {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--surface);
+}
+
+.home__main {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.home__page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: var(--page-max);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  box-sizing: border-box;
+
+  /* Named container so PageHeader (Tier 2, <35rem) and the columns below (<66.5rem) can query
+     the page's own available width — see Foundations → Responsive. */
+  container-type: inline-size;
+  container-name: page;
+}
+
+.home__theme-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.home__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* Card grids reflow by their own minimum width (Foundations → Responsive: "card would be
+   < 288px/18rem") rather than a manual breakpoint — 3 columns become 2, then 1, automatically. */
+.home__sessions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.home__columns {
+  display: flex;
+  gap: var(--space-5);
+  width: 100%;
+}
+
+.home__columns > .home__section {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+/* Tier 1 · App shell — gutters shrink below 768px (48rem), together with NavRail. */
+@media (width < 48rem) {
+  .home__page {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+    /* Clears the fixed bottom NavRail (icon+label row + its own padding) so content never sits
+       underneath it. */
+    padding-bottom: calc(var(--space-4) + 6rem);
+  }
+}
+
+/* Tier 2 · Component's own width — "Home lower columns": each column stacks once it would be
+   narrower than 520px (32.5rem), i.e. the shared row is narrower than 2×520px + the space-5 gap. */
+@container page (width < 66.5rem) {
+  .home__columns {
+    flex-direction: column;
+  }
+}

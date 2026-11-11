@@ -1,0 +1,39 @@
+name: Discord PR stale review reminder
+
+on:
+  schedule:
+    - cron: "0 */12 * * *" # every 12 hours
+  workflow_dispatch: {}
+
+env:
+  STALE_HOURS: 24 # ponytail: fixed threshold, make a repo var if it ever needs to change per-PR
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remind on unapproved PRs older than threshold
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+        run: |
+          now=$(date -u +%s)
+          gh pr list --repo "$REPO" --state open --json number,title,url,createdAt \
+            | jq -c '.[]' | while read -r pr; do
+              number=$(jq -r '.number' <<<"$pr")
+              createdAt=$(jq -r '.createdAt' <<<"$pr")
+              created=$(date -u -d "$createdAt" +%s)
+              age_hours=$(( (now - created) / 3600 ))
+              if [ "$age_hours" -lt "$STALE_HOURS" ]; then continue; fi
+
+              approved=$(gh pr view "$number" --repo "$REPO" --json reviewDecision --jq '.reviewDecision == "APPROVED"')
+              if [ "$approved" = "true" ]; then continue; fi
+
+              title=$(jq -r '.title' <<<"$pr")
+              url=$(jq -r '.url' <<<"$pr")
+              curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+                -H "Content-Type: application/json" \
+                -d "$(jq -n --arg t "$title" --arg u "$url" --arg h "$age_hours" \
+                  '{content: ("@everyone Still waiting on review (" + $h + "h): **" + $t + "**\n" + $u)}')"
+            done

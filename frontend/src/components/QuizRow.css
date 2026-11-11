@@ -1,0 +1,58 @@
+.quiz-row__main {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+.quiz-row__title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.75rem; /* 28px */
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.quiz-row__meta {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+
+.quiz-row__score {
+  display: flex;
+  align-items: baseline;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.quiz-row__score-value {
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.75rem; /* 28px */
+  color: var(--ink);
+}
+
+.quiz-row__score-out-of {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+  color: var(--ink-muted);
+}
+
+/* Tier 2 · Component's own width — Foundations → Responsive flags QuizRow as needing a compact
+   layout below 420px (26.25rem) but doesn't design one yet: "title on its own line, score and
+   badge below." Forcing .quiz-row__main onto its own line lets score + badge wrap together under
+   it without changing the row's markup. */
+@container list (width < 26.25rem) {
+  .quiz-row {
+    flex-wrap: wrap;
+  }
+
+  .quiz-row__main {
+    flex-basis: 100%;
+  }
+}

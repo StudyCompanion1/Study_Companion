@@ -1,0 +1,133 @@
+.nav-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: var(--rail-width);
+  flex-shrink: 0;
+  padding: var(--space-3) 0;
+  background: var(--surface-sunken);
+  border-right: 1px solid var(--line);
+  box-sizing: border-box;
+
+  /* Pins the rail while the page scrolls, instead of letting it scroll away once content taller
+     than the viewport pushes its (previously static) box out of view beneath the fold. */
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.nav-rail__mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem; /* 44px */
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1875rem; /* 19px */
+}
+
+.nav-rail__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nav-rail__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem; /* 2px */
+  width: 5.25rem; /* 84px */
+  min-height: 3.75rem; /* 60px */
+  padding: 0.375rem 0; /* 6px */
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+
+.nav-rail__icon-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem; /* 48px */
+  height: 2rem; /* 32px */
+  border-radius: var(--radius-full);
+  border: 1.5px solid transparent;
+  color: var(--ink-muted);
+}
+
+.nav-rail__icon-pill.is-active {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.nav-rail__label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem; /* 20px */
+  letter-spacing: 0.01em;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+.nav-rail__label.is-active {
+  color: var(--primary);
+}
+
+.nav-rail__spacer {
+  flex: 1 0 0;
+}
+
+/* Tier 1 · App shell — Foundations → Responsive: NavRail becomes the bottom bar below 768px
+   (48rem), together with TopBar/ContextPanel. Settings stays visible (one tap away everywhere);
+   Search is dropped for now. */
+@media (width < 48rem) {
+  .nav-rail {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    top: auto;
+    flex-direction: row;
+    align-items: stretch;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: var(--space-1);
+    padding-bottom: 1.25rem; /* clears the iPhone home indicator */
+    border-right: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .nav-rail__mark {
+    display: none;
+  }
+
+  /* Unwraps the items group so Home/Collections/Quizzes/Practice/Settings become direct flex
+     children of .nav-rail and share the row evenly, without changing the component's markup. */
+  .nav-rail__items {
+    display: contents;
+  }
+
+  .nav-rail__spacer {
+    display: none;
+  }
+
+  .nav-rail__item {
+    flex: 1 0 0;
+    width: auto;
+  }
+
+  .nav-rail__item[data-nav='search'] {
+    display: none;
+  }
+}
