@@ -110,6 +110,10 @@ Add your Brave API key to a `.env` file in the backend folder.
 
 Follow the [Brave API Key Instructions](https://api-dashboard.search.brave.com/documentation/guides/authentication).
 
+You will be prompted to enter your debit or credit card information. You will not be charged unless you exceed the free $5 monthly credit, which covers up to 1,000 API calls per month. Your free credit resets every month.
+
+__NOTE__: Also recommend adding usage limits not to exceed the free monthly $5.
+
 ```env
 BRAVE_API_KEY=your_api_key_here
 ```
