@@ -1,15 +1,17 @@
-import { Icon } from './Icon'
+import { Icon, type IconName } from './Icon'
 import './PageHeader.css'
 
 export function PageHeader({
   title,
   summary,
   actionLabel,
+  actionIcon = 'upload',
   onAction,
 }: {
   title: string
   summary: string
   actionLabel?: string
+  actionIcon?: IconName
   onAction?: () => void
 }) {
   return (
@@ -20,7 +22,7 @@ export function PageHeader({
       </div>
       {actionLabel && (
         <button type="button" className="page-header__action" onClick={onAction}>
-          <Icon name="upload" size={20} />
+          <Icon name={actionIcon} size={20} />
           {actionLabel}
         </button>
       )}

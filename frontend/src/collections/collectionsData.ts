@@ -1,7 +1,6 @@
 import type { Collection, Note } from './types'
 
-/* Mock data copied from the Figma screens (Collections / Desktop and Collection / Desktop).
-   Replace with API calls once the Arch group's collections endpoints exist.
+/* Preview data copied from the Figma screens (Collections / Desktop and Collection / Desktop).
 
    Times are written relative to MOCK_NOW so the labels ("2 h ago", "Yesterday"…) always match
    Figma, whatever today's date is. Pass MOCK_NOW as `now` to formatRelative in the preview. */

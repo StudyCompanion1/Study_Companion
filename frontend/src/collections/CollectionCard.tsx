@@ -24,15 +24,14 @@ export function CollectionCard({
     <a
       href={href}
       className="collection-card"
-      aria-label={`${name}, ${code}, ${term}, ${notesLabel}, ${edited}`}
+      aria-label={[name, code, term, notesLabel, edited].filter(Boolean).join(', ')}
     >
-      {/* Colour is only for recognition: the code and name always show. */}
       <div className={`collection-card__band collection-card__band--${color}`}>
-        <span className="collection-card__code">{code}</span>
+        {code && <span className="collection-card__code">{code}</span>}
       </div>
       <div className="collection-card__body">
         <p className="collection-card__name">{name}</p>
-        <p className="collection-card__meta">{term}</p>
+        {term && <p className="collection-card__meta">{term}</p>}
         <div className="collection-card__foot">
           <span className="collection-card__stat">
             {/* Existing icons stand in for Figma's doc and clock icons. */}

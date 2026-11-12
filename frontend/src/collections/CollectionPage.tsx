@@ -1,11 +1,12 @@
 import { NavRail } from '../components/NavRail'
+import { Notice } from '../components/Notice'
 import { PageHeader } from '../components/PageHeader'
 import { SectionHeader } from '../components/SectionHeader'
 import { ThemeSwitcher } from '../components/ThemeSwitcher'
 import { Breadcrumbs } from './Breadcrumbs'
 import { collectionSummary, plural, sortByOpened } from './helpers'
 import { NoteList } from './NoteList'
-import type { Collection, Note } from './types'
+import type { Collection, LoadStatus, Note } from './types'
 import './CollectionsPage.css'
 import './CollectionPage.css'
 
@@ -17,10 +18,12 @@ export function CollectionPage({
   collection,
   notes,
   now,
+  status = 'ready',
 }: {
   collection: Collection | undefined
   notes: Note[]
   now?: Date
+  status?: LoadStatus
 }) {
   return (
     <div className="collections">
@@ -32,7 +35,11 @@ export function CollectionPage({
             <ThemeSwitcher />
           </div>
 
-          {collection ? (
+          {status === 'loading' ? (
+            <p className="collections__empty" role="status">Loading collection…</p>
+          ) : status === 'error' ? (
+            <Notice tone="error">Couldn’t load this collection. Refresh the page to try again.</Notice>
+          ) : collection ? (
             <CollectionContent collection={collection} notes={notes} now={now} />
           ) : (
             <NotFound />

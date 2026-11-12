@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from app.auth.router import router as auth_router
 from app.db import create_db_and_tables
 from app.chatbot import router as chatbot_router
+from app.collections import router as collections_router
 import pymupdf
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,6 +30,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Study Companion API", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(chatbot_router)
+app.include_router(collections_router)
 
 # react / vite frontend
 app.add_middleware(

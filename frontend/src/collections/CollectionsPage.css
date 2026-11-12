@@ -39,6 +39,10 @@
   width: 100%;
 }
 
+.collections__section .section-header__title {
+  overflow-wrap: anywhere;
+}
+
 /* A real list for screen readers ("list, 4 items"), styled as a grid.
    Figma: three per row on desktop, and wider screens never add columns. So each column is at
    least a third of the row (max 3) and at least 18rem (drops to 2, then 1, on narrow screens). */
@@ -46,7 +50,7 @@
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
-    minmax(max(18rem, calc((100% - 2 * var(--space-4)) / 3)), 1fr)
+    minmax(min(100%, max(18rem, calc((100% - 2 * var(--space-4)) / 3))), 1fr)
   );
   gap: var(--space-4);
   margin: 0;
