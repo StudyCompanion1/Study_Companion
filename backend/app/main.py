@@ -9,7 +9,7 @@ from app.auth.router import router as auth_router
 from app.db import create_db_and_tables
 from app.chatbot import router as chatbot_router
 import pymupdf
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import UnidentifiedImageError
 from starlette.concurrency import run_in_threadpool
@@ -19,7 +19,7 @@ from ai_processing.keyword_concept_extraction import (
     analyze_pdf,
     generate_study_guide,
 )
-
+from ai_processing.brave_search import ground_brave_search
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
@@ -139,3 +139,14 @@ async def study_guide(file: UploadFile = File(...)):
         file,
         "guide"
     )
+
+# api #3 - url-resources
+@app.post("/api/url-resources")
+async def url_resources(
+    query: str = Query(..., min_length=1)
+):
+    result = await run_in_threadpool(
+        ground_brave_search,
+        query
+    )
+    return result
