@@ -77,15 +77,13 @@ export function Home() {
                 {quizzes.map((quiz) => (
                   <QuizRow key={quiz.title} {...quiz} />
                 ))}
-              </List>
-            </section>
+                            </List>
+              </section>
+            </div>
           </div>
+        </main>
 
-          <section className="home__section">
-            <Chatbot />
-          </section>
-        </div>
-      </main>
-    </div>
+        <Chatbot />
+      </div>
   )
 }

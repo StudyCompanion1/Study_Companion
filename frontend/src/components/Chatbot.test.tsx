@@ -1,4 +1,4 @@
-
+import '@testing-library/jest-dom/vitest'
 import {
   cleanup,
   fireEvent,
@@ -28,7 +28,13 @@ function createFile(name = 'notes.txt') {
 }
 
 function renderChatbot() {
-  return render(<Chatbot />)
+  const result = render(<Chatbot />)
+
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Open AI chat' }),
+  )
+
+  return result
 }
 
 describe('Chatbot', () => {
@@ -371,7 +377,7 @@ describe('Chatbot', () => {
     )
 
     expect(
-      screen.getByRole('status'),
+      screen.getByText('Study Companion is thinking…')
     ).toHaveTextContent('Study Companion is thinking…')
 
     expect(screen.getByLabelText('Your question')).toBeDisabled()
