@@ -2,8 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '../index.css'
 import { ThemeProvider } from '../theme/ThemeContext'
-import { CollectionsRoute } from './CollectionsRoute'
-import { MOCK_NOW } from './collectionsData'
+import { CollectionPage } from './CollectionPage'
+import { CollectionsPage } from './CollectionsPage'
+import { collections, MOCK_NOW, notes } from './collectionsData'
+import { notesFor } from './helpers'
 
 /* Preview entry, no login needed, while `npm run dev:frontend` is running:
      http://localhost:5173/collections-preview.html                     → screen 1
@@ -15,10 +17,15 @@ const collectionId = new URLSearchParams(window.location.search).get('collection
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
-      <CollectionsRoute
-        route={collectionId ? { page: 'one', collectionId } : { page: 'all' }}
-        now={MOCK_NOW}
-      />
+      {collectionId ? (
+        <CollectionPage
+          collection={collections.find((collection) => collection.id === collectionId)}
+          notes={notesFor(collectionId, notes)}
+          now={MOCK_NOW}
+        />
+      ) : (
+        <CollectionsPage collections={collections} now={MOCK_NOW} />
+      )}
     </ThemeProvider>
   </StrictMode>,
 )

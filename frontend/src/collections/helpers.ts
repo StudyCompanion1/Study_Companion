@@ -30,8 +30,8 @@ export function formatRelative(iso: string, now: Date = new Date()): string {
 }
 
 /** Groups collections by term, keeping the order terms first appear in. */
-export function groupByTerm(list: Collection[]): { term: string; collections: Collection[] }[] {
-  const groups = new Map<string, Collection[]>()
+export function groupByTerm(list: Collection[]): { term: Collection['term']; collections: Collection[] }[] {
+  const groups = new Map<Collection['term'], Collection[]>()
   for (const collection of list) {
     const group = groups.get(collection.term) ?? []
     group.push(collection)
@@ -73,5 +73,5 @@ export function materialLabel(kind: MaterialKind): string {
 
 /** Summary under a collection's title, e.g. "BIO 201 · Autumn 2026 · 12 notes". */
 export function collectionSummary(collection: Collection, noteCount: number): string {
-  return `${collection.code} · ${collection.term} · ${plural(noteCount, 'note')}`
+  return [collection.code, collection.term, plural(noteCount, 'note')].filter(Boolean).join(' · ')
 }
