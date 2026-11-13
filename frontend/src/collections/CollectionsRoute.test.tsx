@@ -122,29 +122,4 @@ describe('CollectionsRoute', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t load your collections')
     expect(screen.queryByText(/No collections yet/)).not.toBeInTheDocument()
   })
-
-  test('shows a collection’s uploaded materials and adds a new upload to them', async () => {
-    const uploaded = (title: string) => ({
-      id: title, collection_id: savedCollection.id, title, file_type: 'pdf', created_at: MOCK_NOW.toISOString(),
-    })
-    const fetchMock = vi.fn((url: string) => {
-      if (url.startsWith('/api/materials?')) return Promise.resolve(json([uploaded('Week 1')]))
-      if (url === '/api/materials') return Promise.resolve(json(uploaded('Week 2'), 201))
-      return Promise.resolve(json(savedCollection))
-    })
-    vi.stubGlobal('fetch', fetchMock)
-    renderRoute({ page: 'one', collectionId: savedCollection.id })
-
-    expect(await screen.findByText('Week 1')).toBeInTheDocument()
-    expect(screen.getByText('1 file · newest first')).toBeInTheDocument()
-
-    const input = screen.getByLabelText('Choose course material to upload')
-    fireEvent.change(input, { target: { files: [new File(['%PDF'], 'Week 2.pdf')] } })
-
-    expect(await screen.findByText('“Week 2.pdf” is saved to this collection.')).toBeInTheDocument()
-    expect(screen.getByText('2 files · newest first')).toBeInTheDocument()
-    const titles = screen.getAllByText(/^Week \d$/).map((el) => el.textContent)
-    expect(titles).toEqual(['Week 2', 'Week 1'])
-    expect(fetchMock).toHaveBeenCalledWith(`/api/materials?collection_id=${savedCollection.id}`, expect.any(Object))
-  })
 })

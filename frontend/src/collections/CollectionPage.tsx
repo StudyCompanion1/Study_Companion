@@ -4,10 +4,10 @@ import { PageHeader } from '../components/PageHeader'
 import { SectionHeader } from '../components/SectionHeader'
 import { ThemeSwitcher } from '../components/ThemeSwitcher'
 import type { Material } from '../materials/api'
-import { MaterialList } from '../materials/MaterialList'
-import { useMaterialUpload } from '../materials/useMaterialUpload'
+import { MaterialsSection } from '../materials/MaterialList'
 import { Breadcrumbs } from './Breadcrumbs'
-import { collectionSummary, plural, sortByOpened } from './helpers'
+import { CollectionHead } from './CollectionHead'
+import { plural, sortByOpened } from './helpers'
 import { NoteList } from './NoteList'
 import type { Collection, LoadStatus, Note } from './types'
 import './CollectionsPage.css'
@@ -16,6 +16,10 @@ import './CollectionPage.css'
 /* Screen 2 — inside one collection. Figma: Screens Desktop → "Collection / Desktop".
    Same page shell as screen 1 (CollectionsPage.css). `collection` is undefined when the address
    names a collection that doesn't exist (or isn't yours), and the page says so. */
+
+/** F1: the files uploaded into this collection (newest first), and what to do when one is added. */
+type UploadProps = { materials?: Material[]; onUploaded?: (material: Material) => void }
+type ContentProps = { collection: Collection; notes: Note[]; now?: Date } & UploadProps
 
 export function CollectionPage({
   collection,
@@ -29,10 +33,7 @@ export function CollectionPage({
   notes: Note[]
   now?: Date
   status?: LoadStatus
-  /** Files uploaded into this collection (F1), newest first. */
-  materials?: Material[]
-  onUploaded?: (material: Material) => void
-}) {
+} & UploadProps) {
   return (
     <div className="collections">
       <NavRail active="Collections" />
@@ -58,43 +59,16 @@ export function CollectionPage({
   )
 }
 
-function CollectionContent({
-  collection,
-  notes,
-  now,
-  materials,
-  onUploaded,
-}: {
-  collection: Collection
-  notes: Note[]
-  now?: Date
-  materials: Material[]
-  onUploaded?: (material: Material) => void
-}) {
+function CollectionContent({ collection, notes, now, materials = [], onUploaded }: ContentProps) {
   const sorted = sortByOpened(notes)
-  const upload = useMaterialUpload({ collectionId: collection.id, onUploaded })
 
   return (
     <>
-      <div className="collection__head">
-        <Breadcrumbs items={[{ label: 'Collections', href: '/collections' }, { label: collection.name }]} />
-        {/* F1 Upload material: saves the file into this collection (see materials/useMaterialUpload). */}
-        <PageHeader
-          title={collection.name}
-          summary={collectionSummary(collection, notes.length)}
-          actionLabel={upload.label}
-          onAction={upload.open}
-          actionDisabled={upload.busy}
-        />
-        {upload.element}
-      </div>
+      {/* Breadcrumb, title and the F1 "Upload material" button */}
+      <CollectionHead collection={collection} noteCount={notes.length} onUploaded={onUploaded} />
 
-      {materials.length > 0 && (
-        <section className="collections__section">
-          <SectionHeader title="Materials" meta={`${plural(materials.length, 'file')} · newest first`} />
-          <MaterialList materials={materials} />
-        </section>
-      )}
+      {/* F1: files uploaded into this collection */}
+      <MaterialsSection materials={materials} />
 
       <section className="collections__section">
         <SectionHeader title="Notes" meta={`${plural(notes.length, 'note')} · most recently opened first`} />
