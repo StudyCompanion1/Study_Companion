@@ -52,6 +52,13 @@
   text-decoration: none;
 }
 
+button.nav-rail__item {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
 .nav-rail__icon-pill {
   display: flex;
   align-items: center;
@@ -67,6 +74,26 @@
   background: var(--primary-soft);
   border-color: var(--primary);
   color: var(--primary);
+}
+
+.nav-rail__buddy-mark {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.nav-rail__upload-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: var(--on-primary);
 }
 
 .nav-rail__label {
@@ -112,7 +139,7 @@
     display: none;
   }
 
-  /* Unwraps the items group so Home/Collections/Quizzes/Practice/Settings become direct flex
+  /* Unwraps the items group so Home/Collections/Practice/Settings become direct flex
      children of .nav-rail and share the row evenly, without changing the component's markup. */
   .nav-rail__items {
     display: contents;

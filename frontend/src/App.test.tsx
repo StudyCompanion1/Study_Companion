@@ -30,5 +30,7 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByText('Good afternoon, Maya')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Decrease Font Size' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Increase Font Size' })).not.toBeInTheDocument()
   })
 })
