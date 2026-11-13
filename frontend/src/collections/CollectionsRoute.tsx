@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ApiError } from '../auth/api'
 import { createCollection, getCollection, listCollections } from './api'
+import { listMaterials, type Material } from '../materials/api'
 import { CollectionPage } from './CollectionPage'
 import { CollectionsPage } from './CollectionsPage'
 import type { CollectionsRoute as Route } from './routes'
@@ -41,6 +42,7 @@ function CollectionsIndex({ now }: { now?: Date }) {
 function CollectionDetails({ id, now }: { id: string; now?: Date }) {
   const [collection, setCollection] = useState<Collection>()
   const [status, setStatus] = useState<LoadStatus>('loading')
+  const [materials, setMaterials] = useState<Material[]>([])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -55,5 +57,23 @@ function CollectionDetails({ id, now }: { id: string; now?: Date }) {
     return () => controller.abort()
   }, [id])
 
-  return <CollectionPage collection={collection} notes={[]} status={status} now={now} />
+  useEffect(() => {
+    // The uploaded files are extra: if they can't load, the page still works without them
+    const controller = new AbortController()
+    listMaterials(id, controller.signal).then((list) => {
+      if (!controller.signal.aborted && Array.isArray(list)) setMaterials(list)
+    }).catch(() => {})
+    return () => controller.abort()
+  }, [id])
+
+  return (
+    <CollectionPage
+      collection={collection}
+      notes={[]}
+      status={status}
+      now={now}
+      materials={materials}
+      onUploaded={(material) => setMaterials((current) => [material, ...current])}
+    />
+  )
 }

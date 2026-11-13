@@ -3,6 +3,9 @@ import { Notice } from '../components/Notice'
 import { PageHeader } from '../components/PageHeader'
 import { SectionHeader } from '../components/SectionHeader'
 import { ThemeSwitcher } from '../components/ThemeSwitcher'
+import type { Material } from '../materials/api'
+import { MaterialList } from '../materials/MaterialList'
+import { useMaterialUpload } from '../materials/useMaterialUpload'
 import { Breadcrumbs } from './Breadcrumbs'
 import { collectionSummary, plural, sortByOpened } from './helpers'
 import { NoteList } from './NoteList'
@@ -19,11 +22,16 @@ export function CollectionPage({
   notes,
   now,
   status = 'ready',
+  materials = [],
+  onUploaded,
 }: {
   collection: Collection | undefined
   notes: Note[]
   now?: Date
   status?: LoadStatus
+  /** Files uploaded into this collection (F1), newest first. */
+  materials?: Material[]
+  onUploaded?: (material: Material) => void
 }) {
   return (
     <div className="collections">
@@ -40,7 +48,7 @@ export function CollectionPage({
           ) : status === 'error' ? (
             <Notice tone="error">Couldn’t load this collection. Refresh the page to try again.</Notice>
           ) : collection ? (
-            <CollectionContent collection={collection} notes={notes} now={now} />
+            <CollectionContent collection={collection} notes={notes} now={now} materials={materials} onUploaded={onUploaded} />
           ) : (
             <NotFound />
           )}
@@ -50,20 +58,43 @@ export function CollectionPage({
   )
 }
 
-function CollectionContent({ collection, notes, now }: { collection: Collection; notes: Note[]; now?: Date }) {
+function CollectionContent({
+  collection,
+  notes,
+  now,
+  materials,
+  onUploaded,
+}: {
+  collection: Collection
+  notes: Note[]
+  now?: Date
+  materials: Material[]
+  onUploaded?: (material: Material) => void
+}) {
   const sorted = sortByOpened(notes)
+  const upload = useMaterialUpload({ collectionId: collection.id, onUploaded })
 
   return (
     <>
       <div className="collection__head">
         <Breadcrumbs items={[{ label: 'Collections', href: '/collections' }, { label: collection.name }]} />
-        {/* Upload is the Arch group's feature (F1); the button does nothing until it exists. */}
+        {/* F1 Upload material: saves the file into this collection (see materials/useMaterialUpload). */}
         <PageHeader
           title={collection.name}
           summary={collectionSummary(collection, notes.length)}
-          actionLabel="Upload material"
+          actionLabel={upload.label}
+          onAction={upload.open}
+          actionDisabled={upload.busy}
         />
+        {upload.element}
       </div>
+
+      {materials.length > 0 && (
+        <section className="collections__section">
+          <SectionHeader title="Materials" meta={`${plural(materials.length, 'file')} · newest first`} />
+          <MaterialList materials={materials} />
+        </section>
+      )}
 
       <section className="collections__section">
         <SectionHeader title="Notes" meta={`${plural(notes.length, 'note')} · most recently opened first`} />
