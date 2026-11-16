@@ -3,6 +3,7 @@ import httpx
 from dotenv import load_dotenv
 from pathlib import Path
 from ai_processing.utils.retry_ai_decorator import retry
+
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(BACKEND_ROOT / ".env")
 
@@ -51,6 +52,7 @@ class BraveSearchResponse:
         self.discussion_results = (data.get("discussions") or {}).get("results", [])
 
         self.infobox = data.get("infobox")
+
 
 @retry(max_attempts=5, delay=1.1, backoff=2.0)
 def ground_brave_search(input):
