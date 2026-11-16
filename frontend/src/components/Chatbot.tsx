@@ -1,4 +1,3 @@
-
 import {
   useEffect,
   useRef,
@@ -13,11 +12,13 @@ import './Chatbot.css'
 type Message = {
   role: 'user' | 'assistant'
   content: string
+  suggestions?: string[]
 }
 
 type ChatResponse = {
   reply?: string
   detail?: string
+  suggestions?: string[]
 }
 
 type ChatSize = {
@@ -307,10 +308,13 @@ export default function Chatbot() {
 
   //send msg to gemini backend 
 
-  async function sendMessage(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function sendMessage(
+    event?: FormEvent<HTMLFormElement>,
+    suggestedQuestion?: string,
+  ) {
+    event?.preventDefault()
 
-    const question = input.trim()
+    const question = (suggestedQuestion ?? input).trim()
 
     if (!question || isSending) return
 
@@ -372,6 +376,14 @@ export default function Chatbot() {
         {
           role: 'assistant',
           content: data.reply!,
+          suggestions: Array.isArray(data.suggestions)
+            ? data.suggestions
+                .filter(
+                  (item): item is string =>
+                    typeof item === 'string' && item.trim().length > 0,
+                )
+                .slice(0, 3)
+            : [],
         },
       ])
     } catch (err) {
@@ -533,6 +545,31 @@ export default function Chatbot() {
                 </span>
 
                 <p>{message.content}</p>
+
+                
+                {message.role === 'assistant' &&
+                  message.suggestions &&
+                  message.suggestions.length > 0 && (
+                    <div className="study-chat__suggestions">
+                      <span className="study-chat__suggestions-title">
+                        Suggested questions:
+                      </span>
+
+                      <div className="study-chat__suggestions-list">
+                        {message.suggestions.map((suggestion, suggestionIndex) => (
+                          <button
+                            key={`${suggestionIndex}-${suggestion}`}
+                            type="button"
+                            className="study-chat__secondary-button study-chat__suggestion-button"
+                            onClick={() => sendMessage(undefined, suggestion)}
+                            disabled={isSending}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
               </article>
             ))}
 
