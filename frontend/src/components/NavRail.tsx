@@ -11,6 +11,7 @@ const ITEMS: { label: string; icon: IconName; href: string }[] = [
   { label: 'Collections', href: '/collections', icon: 'collections' },
   { label: 'Practice', href: '#', icon: 'target' },
   { label: 'Search', href: '#', icon: 'search' },
+  { label: 'Groups', href: '#', icon: 'groups' },
 ]
 
 export function NavRail({ active = 'Home' }: { active?: string }) {

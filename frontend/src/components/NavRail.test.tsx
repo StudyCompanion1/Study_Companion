@@ -43,6 +43,16 @@ describe('NavRail', () => {
     expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument()
   })
 
+  test('shows Groups above the Upload button', () => {
+    render(<NavRail />)
+
+    const groups = screen.getByRole('link', { name: 'Groups' })
+    const upload = screen.getByRole('button', { name: 'Upload' })
+
+    expect(groups).toBeInTheDocument()
+    expect(groups.compareDocumentPosition(upload) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   test('applies the text size slider value to the page font size', () => {
     render(
       <ThemeProvider>
