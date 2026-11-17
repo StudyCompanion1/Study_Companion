@@ -1,5 +1,5 @@
 import type { IconName } from './Icon'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import SettingsPanel from './SettingsPanel'
 import { defaultSettings } from './Settings'
 import { Icon } from './Icon'
@@ -9,14 +9,24 @@ import './NavRail.css'
 const ITEMS: { label: string; icon: IconName; href: string }[] = [
   { label: 'Home', href: '/', icon: 'home' },
   { label: 'Collections', href: '/collections', icon: 'collections' },
-  { label: 'Quizzes', href: '#', icon: 'quiz' },
   { label: 'Practice', href: '#', icon: 'target' },
   { label: 'Search', href: '#', icon: 'search' },
+  { label: 'Groups', href: '#', icon: 'groups' },
 ]
 
 export function NavRail({ active = 'Home' }: { active?: string }) {
   const [settingsOpen, setSettingsOpen] = useState(false)
- const [settings, setSettings] = useState(defaultSettings)
+  const [settings, setSettings] = useState(defaultSettings)
+
+  useEffect(() => {
+    const previousFontSize = document.documentElement.style.fontSize
+    document.documentElement.style.fontSize = `${16 * settings.textScale}px`
+
+    return () => {
+      document.documentElement.style.fontSize = previousFontSize
+    }
+  }, [settings.textScale])
+
   return (
     <nav className="nav-rail" aria-label="Primary">
       <div className="nav-rail__mark" aria-hidden="true">
@@ -26,7 +36,7 @@ export function NavRail({ active = 'Home' }: { active?: string }) {
         {ITEMS.map((item) => {
           const isActive = item.label === active
           return (
-            <a
+          <a
               key={item.label}
               href={item.href}
               className="nav-rail__item"
@@ -40,6 +50,18 @@ export function NavRail({ active = 'Home' }: { active?: string }) {
             </a>
           )
         })}
+        <a href="#" className="nav-rail__item" data-nav="buddy" aria-label="Buddy">
+          <span className="nav-rail__icon-pill" aria-hidden="true">
+            <span className="nav-rail__buddy-mark">AI</span>
+          </span>
+          <span className="nav-rail__label">Buddy</span>
+        </a>
+        <button type="button" className="nav-rail__item nav-rail__upload" data-nav="upload">
+          <span className="nav-rail__upload-icon">
+            <Icon name="upload" size={20} />
+          </span>
+          <span className="nav-rail__label">Upload</span>
+        </button>
       </div>
       <div className="nav-rail__spacer" />
             <a
