@@ -7,12 +7,13 @@ import { logout } from '../auth/api'
 export interface SettingsPanelProps {
   id: string;
   panel: 'settings' | 'accessibility';
+  placement?: 'sidebar' | 'auth';
   value: Settings;
   onChange: (value: Settings) => void;
   onClose: () => void;
 }
 /** Controlled panel: the host owns persistence and applies settings to content/audio. */
-export default function SettingsPanel({ id: panelId, panel, value, onChange, onClose }: SettingsPanelProps) {
+export default function SettingsPanel({ id: panelId, panel, placement = 'sidebar', value, onChange, onClose }: SettingsPanelProps) {
   const { theme, setTheme } = useTheme();
   const id = useId();
   const title = panel === 'accessibility' ? 'Accessibility' : 'Settings';
@@ -33,12 +34,12 @@ async function handleLogout() {
   }
 }
 
-  return <aside id={panelId} className="sc-settings" aria-labelledby={`${id}-title`}>
+  return <aside id={panelId} className={`sc-settings${placement === 'auth' ? ' sc-settings--auth' : ''}`} aria-labelledby={`${id}-title`}>
     <header className="sc-settings__header"><h2 id={`${id}-title`}>{title}</h2><button className="sc-settings__close" type="button" onClick={onClose} aria-label={`Close ${title.toLowerCase()}`}><span aria-hidden="true">×</span></button></header>
     <div className="sc-settings__body">
       {panel === 'accessibility' && <>
         <section className="sc-settings__section"><label htmlFor={`${id}-text`}>Text size</label><div className="sc-settings__slider"><span aria-hidden="true">A</span><input id={`${id}-text`} type="range" min="0.75" max="2" step="0.125" value={value.textScale} aria-valuetext={`${Math.round(value.textScale * 100)} percent`} onChange={e => update({ textScale: Number(e.target.value) })} /><span className="sc-settings__large" aria-hidden="true">A</span></div></section>
-        <section className="sc-settings__section"><label htmlFor={`${id}-speed`}>Playback speed</label><div className="sc-settings__slider"><span aria-hidden="true">0.5×</span><input id={`${id}-speed`} type="range" min="0.5" max="2" step="0.1" value={value.playbackRate} aria-valuetext={`${value.playbackRate} times normal speed`} onChange={e => update({ playbackRate: Number(e.target.value) })} /><span aria-hidden="true">2×</span></div></section>
+        {placement === 'sidebar' && <section className="sc-settings__section"><label htmlFor={`${id}-speed`}>Playback speed</label><div className="sc-settings__slider"><span aria-hidden="true">0.5×</span><input id={`${id}-speed`} type="range" min="0.5" max="2" step="0.1" value={value.playbackRate} aria-valuetext={`${value.playbackRate} times normal speed`} onChange={e => update({ playbackRate: Number(e.target.value) })} /><span aria-hidden="true">2×</span></div></section>}
       </>}
       <section
   className="sc-settings__section"
@@ -73,7 +74,7 @@ async function handleLogout() {
     Light mode
   </button>
 
-  {panel === 'accessibility' && <>
+  {panel === 'accessibility' && placement === 'sidebar' && <>
     <button
       className="sc-settings__option"
       type="button"

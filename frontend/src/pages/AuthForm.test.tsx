@@ -30,10 +30,39 @@ describe('AuthForm (login)', () => {
   test('renders only email and password fields', () => {
     renderForm({ onLoggedIn: vi.fn() })
 
+    expect(screen.getByRole('button', { name: 'Accessibility' })).toBeInTheDocument()
+    expect(screen.queryByRole('radiogroup', { name: 'Theme' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Name')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Email')).toBeInTheDocument()
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument()
+  })
+
+  test('opens the accessibility menu with text size and appearance controls', () => {
+    renderForm({ onLoggedIn: vi.fn() })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Accessibility' }))
+
+    expect(screen.getByRole('heading', { name: 'Accessibility' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Text size')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Appearance' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Light mode' })).toBeInTheDocument()
+    expect(screen.queryByLabelText('Playback speed')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Color blind mode' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dark' }))
+    expect(screen.getByRole('button', { name: 'Dark' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('applies text size and closes the accessibility menu', () => {
+    renderForm({ onLoggedIn: vi.fn() })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Accessibility' }))
+    fireEvent.change(screen.getByLabelText('Text size'), { target: { value: '1.25' } })
+    expect(document.documentElement.style.fontSize).toBe('20px')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close accessibility' }))
+    expect(screen.queryByRole('heading', { name: 'Accessibility' })).not.toBeInTheDocument()
   })
 
   test('blocks submission with empty fields and focuses the first invalid one', () => {

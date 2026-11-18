@@ -29,6 +29,20 @@
   font-weight: 600;
 }
 
+.sc-settings--auth {
+  top: calc(var(--space-8) + 2.75rem + var(--space-3));
+  right: var(--space-4);
+  left: auto;
+  width: 358px;
+  max-width: calc(100vw - 2 * var(--space-4));
+  height: auto;
+  max-height: calc(100dvh - var(--space-8) - 2.75rem - 2 * var(--space-3));
+  overflow-y: auto;
+  border: 1px solid var(--sc-line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 14%);
+}
+
 .sc-settings * {
   box-sizing: border-box;
 }
@@ -181,6 +195,16 @@
     left: 0;
     max-width: 100%;
     height: calc(100dvh - 6rem);
+  }
+
+  .sc-settings--auth {
+    top: calc(var(--space-8) + 2.75rem + var(--space-3));
+    right: var(--space-4);
+    left: auto;
+    width: 358px;
+    max-width: calc(100vw - 2 * var(--space-4));
+    height: auto;
+    max-height: calc(100dvh - var(--space-8) - 2.75rem - 2 * var(--space-3));
   }
 }
 

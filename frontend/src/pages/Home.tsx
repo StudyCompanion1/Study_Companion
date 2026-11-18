@@ -6,7 +6,6 @@ import { SessionCard, type Session } from '../components/SessionCard'
 import { List } from '../components/List'
 import { PracticeRow, type PracticeTopic } from '../components/PracticeRow'
 import { QuizRow, type QuizResult } from '../components/QuizRow'
-import { ThemeSwitcher } from '../components/ThemeSwitcher'
 import Chatbot from '../components/Chatbot'
 import { useMaterialUpload } from '../materials/useMaterialUpload'
 import './Home.css'
@@ -39,15 +38,6 @@ export function Home() {
       <NavRail active="Home" />
       <main className="home__main">
         <div className="home__page">
-          <div className="home__theme-row">
-            <ThemeSwitcher />
-
-          {/*<div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
-          //<button onClick={() => setFontSize((prev) => Math.max(prev - 2, 12))}>Decrease Font Size</button>
-          //<span>{fontSize}px</span>
-          //<button onClick={() => setFontSize((prev) => Math.min(prev + 2, 32))}>Increase Font Size</button>
-          //</div> */}
-          </div>
           <PageHeader
             title="Good afternoon, Maya"
             summary="You studied for 42 minutes across 3 sessions this week."
