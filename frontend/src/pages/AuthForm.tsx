@@ -1,11 +1,12 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { continueAsGuest, login, register, type User } from '../auth/api.ts'
-import { ThemeSwitcher } from '../components/ThemeSwitcher.tsx'
 import { Icon, type IconName } from '../components/Icon.tsx'
 import { PageHeader } from '../components/PageHeader.tsx'
 import { TextField } from '../components/TextField.tsx'
 import { Button } from '../components/Button.tsx'
 import { Notice } from '../components/Notice.tsx'
+import SettingsPanel from '../components/SettingsPanel.tsx'
+import { defaultSettings } from '../components/Settings.ts'
 import './AuthForm.css'
 
 type Mode = 'login' | 'register'
@@ -52,6 +53,17 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [settings, setSettings] = useState(defaultSettings)
+  const [accessibilityOpen, setAccessibilityOpen] = useState(false)
+
+  useEffect(() => {
+    const previousFontSize = document.documentElement.style.fontSize
+    document.documentElement.style.fontSize = `${16 * settings.textScale}px`
+
+    return () => {
+      document.documentElement.style.fontSize = previousFontSize
+    }
+  }, [settings.textScale])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -156,8 +168,27 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
 
       <main className="auth-form-section">
         <div className="auth-accessibility">
-          <ThemeSwitcher />
+          <button
+            type="button"
+            className="button button--secondary button--md auth-accessibility__button"
+            aria-label="Accessibility"
+            aria-expanded={accessibilityOpen}
+            aria-controls="auth-accessibility-panel"
+            onClick={() => setAccessibilityOpen(open => !open)}
+          >
+            <Icon name="accessibility" size={24} />
+          </button>
         </div>
+        {accessibilityOpen && (
+          <SettingsPanel
+            id="auth-accessibility-panel"
+            panel="accessibility"
+            placement="auth"
+            value={settings}
+            onChange={setSettings}
+            onClose={() => setAccessibilityOpen(false)}
+          />
+        )}
 
         <div className="auth-form-wrapper">
           <PageHeader

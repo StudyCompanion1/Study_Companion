@@ -16,6 +16,7 @@ describe('Home', () => {
     renderHome()
 
     expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument()
+    expect(screen.queryByRole('radiogroup', { name: 'Theme' })).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Good afternoon, Maya' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Pick up where you left off' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Needs more practice' })).toBeInTheDocument()

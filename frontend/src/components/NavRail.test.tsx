@@ -24,10 +24,34 @@ describe('NavRail', () => {
     expect(screen.queryByRole('link', { name: 'Quizzes' })).not.toBeInTheDocument()
   })
 
-  test('always includes a Settings link', () => {
+    test('always includes a Settings button', () => {
     render(<NavRail />)
 
-    expect(screen.getByRole('link', { name: 'Settings' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument()
+  })
+
+  test('shows Accessibility above Settings and opens its own panel', () => {
+    render(<ThemeProvider><NavRail /></ThemeProvider>)
+
+    const accessibility = screen.getByRole('button', { name: 'Accessibility' })
+    const settings = screen.getByRole('button', { name: 'Settings' })
+    expect(accessibility.compareDocumentPosition(settings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    fireEvent.click(accessibility)
+    expect(screen.getByRole('heading', { name: 'Accessibility' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Text size')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Log out' })).not.toBeInTheDocument()
+  })
+
+  test('keeps only appearance and log out in Settings', () => {
+    render(<ThemeProvider><NavRail /></ThemeProvider>)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Dark' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument()
+    expect(screen.queryByLabelText('Text size')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Color blind mode' })).not.toBeInTheDocument()
   })
 
   test('shows Buddy beneath Search with an AI graphic', () => {
@@ -60,7 +84,7 @@ describe('NavRail', () => {
       </ThemeProvider>,
     )
 
-    fireEvent.click(screen.getByRole('link', { name: 'Settings' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Accessibility' }))
 
     const textSize = screen.getByLabelText('Text size')
     expect(textSize).toHaveAttribute('min', '0.75')

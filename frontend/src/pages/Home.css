@@ -28,11 +28,6 @@
   container-name: page;
 }
 
-.home__theme-row {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .home__section {
   display: flex;
   flex-direction: column;
