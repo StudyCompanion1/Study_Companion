@@ -19,6 +19,10 @@ class CourseMaterial(SQLModel, table=True):
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="users.id", index=True, ondelete="CASCADE")
+    # The collection (course) it was uploaded into; None when uploaded from Home
+    collection_id: uuid.UUID | None = Field(
+        default=None, foreign_key="collections.id", index=True, ondelete="CASCADE"
+    )
     title: str = Field(max_length=200)
     file_type: FileType
     # Where the uploaded file lives in storage; the file itself is never stored in the database

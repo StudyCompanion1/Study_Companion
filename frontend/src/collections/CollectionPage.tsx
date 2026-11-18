@@ -3,8 +3,11 @@ import { Notice } from '../components/Notice'
 import { PageHeader } from '../components/PageHeader'
 import { SectionHeader } from '../components/SectionHeader'
 import { ThemeSwitcher } from '../components/ThemeSwitcher'
+import type { Material } from '../materials/api'
+import { MaterialsSection } from '../materials/MaterialList'
 import { Breadcrumbs } from './Breadcrumbs'
-import { collectionSummary, plural, sortByOpened } from './helpers'
+import { CollectionHead } from './CollectionHead'
+import { plural, sortByOpened } from './helpers'
 import { NoteList } from './NoteList'
 import type { Collection, LoadStatus, Note } from './types'
 import './CollectionsPage.css'
@@ -14,17 +17,23 @@ import './CollectionPage.css'
    Same page shell as screen 1 (CollectionsPage.css). `collection` is undefined when the address
    names a collection that doesn't exist (or isn't yours), and the page says so. */
 
+/** F1: the files uploaded into this collection (newest first), and what to do when one is added. */
+type UploadProps = { materials?: Material[]; onUploaded?: (material: Material) => void }
+type ContentProps = { collection: Collection; notes: Note[]; now?: Date } & UploadProps
+
 export function CollectionPage({
   collection,
   notes,
   now,
   status = 'ready',
+  materials = [],
+  onUploaded,
 }: {
   collection: Collection | undefined
   notes: Note[]
   now?: Date
   status?: LoadStatus
-}) {
+} & UploadProps) {
   return (
     <div className="collections">
       <NavRail active="Collections" />
@@ -40,7 +49,7 @@ export function CollectionPage({
           ) : status === 'error' ? (
             <Notice tone="error">Couldn’t load this collection. Refresh the page to try again.</Notice>
           ) : collection ? (
-            <CollectionContent collection={collection} notes={notes} now={now} />
+            <CollectionContent collection={collection} notes={notes} now={now} materials={materials} onUploaded={onUploaded} />
           ) : (
             <NotFound />
           )}
@@ -50,20 +59,16 @@ export function CollectionPage({
   )
 }
 
-function CollectionContent({ collection, notes, now }: { collection: Collection; notes: Note[]; now?: Date }) {
+function CollectionContent({ collection, notes, now, materials = [], onUploaded }: ContentProps) {
   const sorted = sortByOpened(notes)
 
   return (
     <>
-      <div className="collection__head">
-        <Breadcrumbs items={[{ label: 'Collections', href: '/collections' }, { label: collection.name }]} />
-        {/* Upload is the Arch group's feature (F1); the button does nothing until it exists. */}
-        <PageHeader
-          title={collection.name}
-          summary={collectionSummary(collection, notes.length)}
-          actionLabel="Upload material"
-        />
-      </div>
+      {/* Breadcrumb, title and the F1 "Upload material" button */}
+      <CollectionHead collection={collection} noteCount={notes.length} onUploaded={onUploaded} />
+
+      {/* F1: files uploaded into this collection */}
+      <MaterialsSection materials={materials} />
 
       <section className="collections__section">
         <SectionHeader title="Notes" meta={`${plural(notes.length, 'note')} · most recently opened first`} />
