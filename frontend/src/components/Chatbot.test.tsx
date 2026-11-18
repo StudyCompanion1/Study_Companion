@@ -46,6 +46,7 @@ describe('Chatbot', () => {
   afterEach(() => {
     cleanup()
     vi.unstubAllGlobals()
+    vi.restoreAllMocks()
   })
 
   test('renders the initial greeting and chat controls', () => {
@@ -60,6 +61,7 @@ describe('Chatbot', () => {
     ).toBeInTheDocument()
 
     expect(screen.getByLabelText('Your question')).toBeInTheDocument()
+
     expect(
       screen.getByLabelText('Attach notes'),
     ).toBeInTheDocument()
@@ -96,7 +98,9 @@ describe('Chatbot', () => {
       ),
     ).toBeInTheDocument()
 
-    expect(screen.getByText('What is photosynthesis?')).toBeInTheDocument()
+    expect(
+      screen.getByText('What is photosynthesis?'),
+    ).toBeInTheDocument()
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
 
@@ -109,7 +113,9 @@ describe('Chatbot', () => {
     const formData = options.body as FormData
 
     expect(formData.get('message')).toBe('What is photosynthesis?')
-    expect(JSON.parse(formData.get('history') as string)).toHaveLength(1)
+    expect(
+      JSON.parse(formData.get('history') as string),
+    ).toHaveLength(1)
   })
 
   test('does not send a blank question', () => {
@@ -122,6 +128,90 @@ describe('Chatbot', () => {
     fireEvent.submit(form!)
 
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  test('downloads the current conversation as a text transcript', async () => {
+    const createObjectURL = vi.fn<(file: Blob) => string>(
+      () => 'blob:transcript',
+    )
+    const revokeObjectURL = vi.fn()
+
+    vi.stubGlobal(
+      'URL',
+      class extends URL {
+        static createObjectURL = createObjectURL
+        static revokeObjectURL = revokeObjectURL
+      },
+    )
+
+    const clickLink = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {})
+
+    fetchMock.mockResolvedValueOnce(
+      mockResponse({ reply: 'Méthode\nExample' }),
+    )
+
+    renderChatbot()
+
+    const downloadButton = screen.getByRole('button', {
+      name: 'Download transcript',
+    })
+
+    expect(downloadButton).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('Your question'), {
+      target: { value: 'What is recursion?' },
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Send message' }),
+    )
+
+    expect(downloadButton).toBeDisabled()
+
+    await waitFor(() => {
+      expect(downloadButton).toBeEnabled()
+    })
+
+    fireEvent.click(downloadButton)
+
+    expect(clickLink).toHaveBeenCalledTimes(1)
+
+    const link = clickLink.mock.contexts[0] as HTMLAnchorElement
+
+    expect(link.download).toBe('study-companion-transcript.txt')
+    expect(link.href).toBe('blob:transcript')
+    expect(link.isConnected).toBe(false)
+
+    const [[file]] = createObjectURL.mock.calls
+
+    expect(file.type).toBe('text/plain;charset=utf-8')
+
+    const transcript = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+
+      reader.onload = () => resolve(String(reader.result))
+      reader.onerror = () => reject(reader.error)
+      reader.readAsText(file)
+    })
+
+    expect(transcript).toBe(
+      'You:\nWhat is recursion?\n\nStudy Companion:\nMéthode\nExample\n',
+    )
+
+    await waitFor(
+      () => {
+        expect(revokeObjectURL).toHaveBeenCalledWith('blob:transcript')
+      },
+      { timeout: 2000 },
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'New chat' }),
+    )
+
+    expect(downloadButton).toBeDisabled()
   })
 
   test('shows an API error when the backend rejects a request', async () => {
@@ -223,6 +313,7 @@ describe('Chatbot', () => {
     )
 
     expect(screen.queryByText('notes.txt')).not.toBeInTheDocument()
+
     expect(
       screen.queryByLabelText('Attached study materials'),
     ).not.toBeInTheDocument()
@@ -276,7 +367,9 @@ describe('Chatbot', () => {
       '"large-notes.txt" exceeds the 25 MB file limit.',
     )
 
-    expect(screen.queryByText('large-notes.txt')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('large-notes.txt'),
+    ).not.toBeInTheDocument()
   })
 
   test('limits attachments to five files', () => {
@@ -301,7 +394,6 @@ describe('Chatbot', () => {
     }
 
     expect(screen.queryByText('notes-6.txt')).not.toBeInTheDocument()
-
     expect(screen.getByLabelText('Attach notes')).toBeDisabled()
   })
 
@@ -377,7 +469,7 @@ describe('Chatbot', () => {
     )
 
     expect(
-      screen.getByText('Study Companion is thinking…')
+      screen.getByText('Study Companion is thinking…'),
     ).toHaveTextContent('Study Companion is thinking…')
 
     expect(screen.getByLabelText('Your question')).toBeDisabled()
