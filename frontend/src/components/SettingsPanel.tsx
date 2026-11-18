@@ -5,14 +5,17 @@ import './SettingsPanel.css';
 import { logout } from '../auth/api'
 
 export interface SettingsPanelProps {
+  id: string;
+  panel: 'settings' | 'accessibility';
   value: Settings;
   onChange: (value: Settings) => void;
   onClose: () => void;
 }
 /** Controlled panel: the host owns persistence and applies settings to content/audio. */
-export default function SettingsPanel({ value, onChange, onClose }: SettingsPanelProps) {
+export default function SettingsPanel({ id: panelId, panel, value, onChange, onClose }: SettingsPanelProps) {
   const { theme, setTheme } = useTheme();
   const id = useId();
+  const title = panel === 'accessibility' ? 'Accessibility' : 'Settings';
   const update = (patch: Partial<Settings>) => onChange({ ...value, ...patch });
   const [loggingOut, setLoggingOut] = useState(false)
   const [logoutError, setLogoutError] = useState('')
@@ -30,11 +33,13 @@ async function handleLogout() {
   }
 }
 
-  return <aside className="sc-settings" aria-labelledby={`${id}-title`}>
-    <header className="sc-settings__header"><h2 id={`${id}-title`}>Settings / Accessibility</h2><button className="sc-settings__close" type="button" onClick={onClose} aria-label="Close settings"><span aria-hidden="true">×</span></button></header>
+  return <aside id={panelId} className="sc-settings" aria-labelledby={`${id}-title`}>
+    <header className="sc-settings__header"><h2 id={`${id}-title`}>{title}</h2><button className="sc-settings__close" type="button" onClick={onClose} aria-label={`Close ${title.toLowerCase()}`}><span aria-hidden="true">×</span></button></header>
     <div className="sc-settings__body">
-      <section className="sc-settings__section"><label htmlFor={`${id}-text`}>Text size</label><div className="sc-settings__slider"><span aria-hidden="true">A</span><input id={`${id}-text`} type="range" min="0.75" max="2" step="0.125" value={value.textScale} aria-valuetext={`${Math.round(value.textScale * 100)} percent`} onChange={e => update({ textScale: Number(e.target.value) })} /><span className="sc-settings__large" aria-hidden="true">A</span></div></section>
-      <section className="sc-settings__section"><label htmlFor={`${id}-speed`}>Playback speed</label><div className="sc-settings__slider"><span aria-hidden="true">0.5×</span><input id={`${id}-speed`} type="range" min="0.5" max="2" step="0.1" value={value.playbackRate} aria-valuetext={`${value.playbackRate} times normal speed`} onChange={e => update({ playbackRate: Number(e.target.value) })} /><span aria-hidden="true">2×</span></div></section>
+      {panel === 'accessibility' && <>
+        <section className="sc-settings__section"><label htmlFor={`${id}-text`}>Text size</label><div className="sc-settings__slider"><span aria-hidden="true">A</span><input id={`${id}-text`} type="range" min="0.75" max="2" step="0.125" value={value.textScale} aria-valuetext={`${Math.round(value.textScale * 100)} percent`} onChange={e => update({ textScale: Number(e.target.value) })} /><span className="sc-settings__large" aria-hidden="true">A</span></div></section>
+        <section className="sc-settings__section"><label htmlFor={`${id}-speed`}>Playback speed</label><div className="sc-settings__slider"><span aria-hidden="true">0.5×</span><input id={`${id}-speed`} type="range" min="0.5" max="2" step="0.1" value={value.playbackRate} aria-valuetext={`${value.playbackRate} times normal speed`} onChange={e => update({ playbackRate: Number(e.target.value) })} /><span aria-hidden="true">2×</span></div></section>
+      </>}
       <section
   className="sc-settings__section"
   aria-labelledby={`${id}-appearance`}
@@ -68,23 +73,25 @@ async function handleLogout() {
     Light mode
   </button>
 
-  <button
-    className="sc-settings__option"
-    type="button"
-    aria-pressed={value.colorBlind}
-    aria-describedby={`${id}-color-help`}
-    onClick={() => update({ colorBlind: !value.colorBlind })}
-  >
-    Color blind mode
-  </button>
+  {panel === 'accessibility' && <>
+    <button
+      className="sc-settings__option"
+      type="button"
+      aria-pressed={value.colorBlind}
+      aria-describedby={`${id}-color-help`}
+      onClick={() => update({ colorBlind: !value.colorBlind })}
+    >
+      Color blind mode
+    </button>
 
-  <p id={`${id}-color-help`} className="sc-settings__help">
-    Use colors that are easier to distinguish.
-  </p>
+    <p id={`${id}-color-help`} className="sc-settings__help">
+      Use colors that are easier to distinguish.
+    </p>
+  </>}
 </section>
     </div>
 
-    <footer className="sc-settings__footer">
+    {panel === 'settings' && <footer className="sc-settings__footer">
       {logoutError && <p role="alert">{logoutError}</p>}
 
       <button
@@ -95,6 +102,6 @@ async function handleLogout() {
       >
         {loggingOut ? 'Logging out…' : 'Log out'}
       </button>
-    </footer>
+    </footer>}
   </aside>;
 }

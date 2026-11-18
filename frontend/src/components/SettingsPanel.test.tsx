@@ -4,10 +4,10 @@ import SettingsPanel from './SettingsPanel.tsx'
 import { defaultSettings } from './Settings.ts'
 import { ThemeProvider } from '../theme/ThemeContext.tsx'
 
-function renderPanel(onChange = vi.fn(), onClose = vi.fn()) {
+function renderPanel(onChange = vi.fn(), onClose = vi.fn(), panel: 'settings' | 'accessibility' = 'accessibility') {
   render(
     <ThemeProvider>
-      <SettingsPanel value={defaultSettings} onChange={onChange} onClose={onClose} />
+      <SettingsPanel id={`${panel}-panel`} panel={panel} value={defaultSettings} onChange={onChange} onClose={onClose} />
     </ThemeProvider>,
   )
   return { onChange, onClose }
@@ -17,7 +17,7 @@ describe('SettingsPanel', () => {
   test('calls onClose from the close button', () => {
     const { onClose } = renderPanel()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Close settings' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Close accessibility' }))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
@@ -52,5 +52,23 @@ describe('SettingsPanel', () => {
 
     expect(screen.getByRole('button', { name: 'Dark' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'Light mode' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  test('shows appearance in both modes and keeps logout in Settings only', () => {
+    const { unmount } = render(
+      <ThemeProvider>
+        <SettingsPanel id="settings-panel" panel="settings" value={defaultSettings} onChange={vi.fn()} onClose={vi.fn()} />
+      </ThemeProvider>,
+    )
+
+    expect(screen.getByRole('button', { name: 'Dark' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument()
+    expect(screen.queryByLabelText('Text size')).not.toBeInTheDocument()
+    unmount()
+
+    renderPanel(vi.fn(), vi.fn(), 'accessibility')
+    expect(screen.getByRole('button', { name: 'Dark' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Text size')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Log out' })).not.toBeInTheDocument()
   })
 })
