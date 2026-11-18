@@ -20,7 +20,7 @@ describe('useMaterialUpload — happy path', () => {
     let finish: (res: Response) => void = () => {}
     vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((resolve) => (finish = resolve))))
     const onUploaded = vi.fn()
-    render(<UploadHarness onUploaded={onUploaded} />)
+    render(<UploadHarness collectionId="c1" onUploaded={onUploaded} />)
 
     choose(new File(['%PDF'], 'Week 1.pdf'))
 
@@ -29,7 +29,7 @@ describe('useMaterialUpload — happy path', () => {
 
     await act(async () => finish(jsonResponse(material, 201)))
 
-    expect(screen.getByText('“Week 1.pdf” is saved to your account.')).toBeInTheDocument()
+    expect(screen.getByText('“Week 1.pdf” is saved to this collection.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Upload material' })).toBeEnabled()
     expect(onUploaded).toHaveBeenCalledWith(material)
   })

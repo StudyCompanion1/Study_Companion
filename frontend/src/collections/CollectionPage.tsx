@@ -1,39 +1,42 @@
 import { NavRail } from '../components/NavRail'
 import { Notice } from '../components/Notice'
 import { PageHeader } from '../components/PageHeader'
-import { SectionHeader } from '../components/SectionHeader'
 import { ThemeSwitcher } from '../components/ThemeSwitcher'
 import type { Material } from '../materials/api'
-import { MaterialsSection } from '../materials/MaterialList'
 import { Breadcrumbs } from './Breadcrumbs'
 import { CollectionHead } from './CollectionHead'
-import { plural, sortByOpened } from './helpers'
-import { NoteList } from './NoteList'
+import { NotesSection } from './NotesSection'
 import type { Collection, LoadStatus, Note } from './types'
 import './CollectionsPage.css'
 import './CollectionPage.css'
 
 /* Screen 2 — inside one collection. Figma: Screens Desktop → "Collection / Desktop".
    Same page shell as screen 1 (CollectionsPage.css). `collection` is undefined when the address
-   names a collection that doesn't exist (or isn't yours), and the page says so. */
+   names a collection that doesn't exist (or isn't yours), and the page says so.
+   Each uploaded file is one row of Notes (CollectionsRoute.tsx turns them into notes); a row
+   opens the file and its notes side by side (materials/MaterialView.tsx). */
 
-/** F1: the files uploaded into this collection (newest first), and what to do when one is added. */
-type UploadProps = { materials?: Material[]; onUploaded?: (material: Material) => void }
-type ContentProps = { collection: Collection; notes: Note[]; now?: Date } & UploadProps
+type NoteProps = {
+  /** F1: called with each file uploaded with this page's "Upload material" button. */
+  onUploaded?: (material: Material) => void
+  /** Lets the student reorder the notes (NotesSection.tsx). */
+  onMoveNote?: (id: string, toIndex: number) => void
+  orderError?: string
+}
+type ContentProps = { collection: Collection; notes: Note[]; now?: Date } & NoteProps
 
 export function CollectionPage({
   collection,
   notes,
   now,
   status = 'ready',
-  materials = [],
-  onUploaded,
+  ...noteProps
 }: {
   collection: Collection | undefined
   notes: Note[]
   now?: Date
   status?: LoadStatus
-} & UploadProps) {
+} & NoteProps) {
   return (
     <div className="collections">
       <NavRail active="Collections" />
@@ -49,7 +52,7 @@ export function CollectionPage({
           ) : status === 'error' ? (
             <Notice tone="error">Couldn’t load this collection. Refresh the page to try again.</Notice>
           ) : collection ? (
-            <CollectionContent collection={collection} notes={notes} now={now} materials={materials} onUploaded={onUploaded} />
+            <CollectionContent collection={collection} notes={notes} now={now} {...noteProps} />
           ) : (
             <NotFound />
           )}
@@ -59,25 +62,12 @@ export function CollectionPage({
   )
 }
 
-function CollectionContent({ collection, notes, now, materials = [], onUploaded }: ContentProps) {
-  const sorted = sortByOpened(notes)
-
+function CollectionContent({ collection, notes, now, onUploaded, onMoveNote, orderError }: ContentProps) {
   return (
     <>
       {/* Breadcrumb, title and the F1 "Upload material" button */}
       <CollectionHead collection={collection} noteCount={notes.length} onUploaded={onUploaded} />
-
-      {/* F1: files uploaded into this collection */}
-      <MaterialsSection materials={materials} />
-
-      <section className="collections__section">
-        <SectionHeader title="Notes" meta={`${plural(notes.length, 'note')} · most recently opened first`} />
-        {sorted.length === 0 ? (
-          <p className="collections__empty">No notes yet. Upload slides, a PDF or a recording to start.</p>
-        ) : (
-          <NoteList notes={sorted} now={now} />
-        )}
-      </section>
+      <NotesSection notes={notes} now={now} onMove={onMoveNote} orderError={orderError} />
     </>
   )
 }

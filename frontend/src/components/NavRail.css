@@ -21,6 +21,11 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   overscroll-behavior-y: contain;
+
+  /* Sticky makes the rail its own layer, so the Settings panel inside it can only sit as high as
+     the rail does. Lift the rail above the page, or positioned page content (clickable rows,
+     sticky headers) draws over the open panel. */
+  z-index: 10;
 }
 
 .nav-rail::-webkit-scrollbar {

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { ApiError } from '../auth/api.ts'
-import { checkFile, listMaterials, MAX_UPLOAD_BYTES, uploadMaterial } from './api.ts'
+import { checkFile, listMaterials, MAX_UPLOAD_BYTES, reorderMaterials, uploadMaterial } from './api.ts'
 
 function mockFetch(status: number, body: unknown) {
   const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status }))
@@ -93,5 +93,25 @@ describe('listMaterials', () => {
     await listMaterials('c 1')
 
     expect(fetchMock.mock.calls[0][0]).toBe('/api/materials?collection_id=c%201')
+  })
+})
+
+describe('reorderMaterials', () => {
+  test('sends the whole new order', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await reorderMaterials('c1', ['b', 'a'])
+
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/materials/order')
+    expect(init.method).toBe('PUT')
+    expect(JSON.parse(init.body)).toEqual({ collection_id: 'c1', material_ids: ['b', 'a'] })
+  })
+
+  test('throws the backend message on failure', async () => {
+    mockFetch(409, { detail: 'This list of files is out of date.' })
+
+    await expect(reorderMaterials('c1', [])).rejects.toThrow('This list of files is out of date.')
   })
 })
