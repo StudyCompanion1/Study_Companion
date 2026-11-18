@@ -1,0 +1,237 @@
+/* The material view (MaterialView.tsx, PageRows.tsx). Page shell from CollectionsPage.css.
+   Each row is a two-column grid: the page (wider) and its notes box. On narrow screens the notes
+   box goes under its page. */
+
+.material-view {
+  --material-columns: minmax(0, 3fr) minmax(16rem, 2fr);
+}
+
+/* Header: back arrow, then the title with the file chip beside it (title styles from PageHeader.css) */
+.material-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.material-head__back {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem; /* 44px */
+  height: 2.75rem;
+  margin-top: -0.125rem; /* centres on the first line of the title */
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+}
+
+.material-head__back:hover {
+  background: var(--surface-sunken);
+}
+
+.material-head__back:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus);
+}
+
+.material-head__text {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.material-head__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+/* In the list the chip fills its column; here it's only as wide as the file name */
+.material-head__title-row .file-chip {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+.material-view__status {
+  min-height: 1.75rem;
+}
+
+.material-view__saved {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--ink-muted);
+}
+
+/* Column labels stay at the top while scrolling */
+.material-view__columns {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: var(--material-columns);
+  gap: var(--space-5);
+  padding: var(--space-2) 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.material-view__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.material-view__row {
+  display: grid;
+  grid-template-columns: var(--material-columns);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.material-view__source {
+  min-width: 0;
+}
+
+.material-view__picture {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff; /* PDF pages are drawn on white, whatever the theme */
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+
+.material-view__text {
+  margin: 0;
+  padding: var(--space-5);
+  background: var(--surface-raised);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.75rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* A slide's text in a slide-shaped box */
+.material-view__text--slide {
+  aspect-ratio: 16 / 9;
+  overflow: auto;
+}
+
+.material-view__page-label {
+  margin: 0 0 var(--space-2);
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.material-view__empty {
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+.material-view__notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* A page's notes box, or a Word or text file's notes pages, stay in view while the page scrolls
+   past. The notes pages scroll on their own once they're taller than the window. */
+.material-view__row > .material-view__notes,
+.material-view__stack {
+  position: sticky;
+  top: 3rem; /* below the column labels */
+}
+
+.material-view__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-height: calc(100dvh - 4rem);
+  overflow-y: auto;
+  padding: 3px; /* room for the focus ring inside the scrolling area */
+  margin: -3px;
+}
+
+.material-view__add {
+  align-self: flex-start;
+}
+
+.material-view__notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* the Remove button's height, so notes pages line up with or without it */
+.material-view__stack .material-view__notes-head {
+  min-height: 2.25rem;
+}
+
+.material-view__notes-label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--ink);
+}
+
+/* Small while empty; PageRows.tsx grows it with the notes, up to the height of its page */
+.material-view__textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 7.5rem;
+  padding: var(--space-3);
+  background: var(--surface-raised);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  resize: none;
+}
+
+.material-view__textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus);
+}
+
+@media (width < 48rem) {
+  .material-view__columns {
+    display: none;
+  }
+
+  .material-view__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .material-view__row > .material-view__notes,
+  .material-view__stack {
+    position: static;
+    max-height: none;
+  }
+}

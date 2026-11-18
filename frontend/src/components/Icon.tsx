@@ -26,6 +26,12 @@ const ICONS = {
   highlighter: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: "M7 12L12 17L20 9L15 4L7 12ZM7 12L4 15L4 18L7 18L9 16M3 21L13 21" },
   speaker: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: "M16.5 8.5C17.42 9.43 17.93 10.69 17.93 12C17.93 13.31 17.42 14.57 16.5 15.5M19 6C20.59 7.59 21.48 9.75 21.48 12C21.48 14.25 20.59 16.41 19 18M4 9L8 9L13 5L13 19L8 15L4 15L4 9Z" },
   outline: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: "M4 5L20 5M9 12L20 12M9 19L20 19M5 5L5 19L8 19M5 12L8 12" },
+  // Not from Figma yet: drawn in the same style for reordering files in a collection and the file view
+  arrowLeft: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: 'M19 12H5M12 19L5 12L12 5' },
+  plus: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: 'M12 5V19M5 12H19' },
+  arrowUp: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: 'M12 19V5M5 12L12 5L19 12' },
+  arrowDown: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: 'M12 5V19M19 12L12 19L5 12' },
+  grip: { viewBox: '0 0 24 24', strokeWidth: 2.5, d: 'M9 6H9.01M15 6H15.01M9 12H9.01M15 12H15.01M9 18H9.01M15 18H15.01' },
 } as const
 
 export type IconName = keyof typeof ICONS

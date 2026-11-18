@@ -19,7 +19,7 @@ describe('useMaterialUpload — when it can’t upload', () => {
 
   test('shows the backend error when the upload fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ detail: 'You are not logged in.' }, 401)))
-    render(<UploadHarness />)
+    render(<UploadHarness collectionId="c1" />)
 
     await act(async () => choose(new File(['%PDF'], 'a.pdf')))
 
@@ -28,7 +28,7 @@ describe('useMaterialUpload — when it can’t upload', () => {
 
   test('shows a generic error when the network fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue('offline'))
-    render(<UploadHarness />)
+    render(<UploadHarness collectionId="c1" />)
 
     await act(async () => choose(new File(['%PDF'], 'a.pdf')))
 
