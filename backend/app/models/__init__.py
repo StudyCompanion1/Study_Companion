@@ -1,3 +1,4 @@
+from app.models.chatbot_preferences import ChatbotPreferences
 from app.models.collection import Collection
 from app.models.group import ChatMessage, StudyGroup, StudyGroupMember
 from app.models.highlight import Highlight
@@ -10,6 +11,7 @@ from app.models.user import User, UserRole
 __all__ = [
     "AccessibilityPreferences",
     "ChatMessage",
+    "ChatbotPreferences",
     "Collection",
     "ContrastPolarity",
     "CourseMaterial",

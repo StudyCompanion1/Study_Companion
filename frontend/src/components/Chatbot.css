@@ -530,3 +530,71 @@
     animation-duration: 0.01ms !important;
   }
 }
+
+
+/* Suggested follow-up questions */
+
+.study-chat__suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.study-chat__suggestions-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.study-chat__suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.study-chat__suggestion-button {
+  white-space: normal;
+  text-align: left;
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+
+  /* Improve text visibility */
+  background-color: #286b63;
+  color: #ffffff;
+  border: 1px solid #72cfc0;
+}
+
+.study-chat__suggestion-button:hover:not(:disabled) {
+  background-color: #36877c;
+  color: #ffffff;
+}
+
+.study-chat__suggestion-button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.study-chat__suggestion-button:disabled {
+  color: #ffffff;
+}
+
+.study-chat__suggestion-button,
+.study-chat__suggestion-button:disabled {
+  background-color: #286b63 !important;
+  color: #ffffff !important;
+  border: 1px solid #286b63;
+  opacity: 1 !important;
+}
+
+/* Slightly darker when hovered */
+.study-chat__suggestion-button:hover:not(:disabled) {
+  background-color: #36877c !important;
+  color: #ffffff !important;
+}
+
+/* Visible keyboard focus */
+.study-chat__suggestion-button:focus-visible {
+  outline: 2px solid #286b63;
+  outline-offset: 3px;
+}

@@ -8,6 +8,7 @@ import { PracticeRow, type PracticeTopic } from '../components/PracticeRow'
 import { QuizRow, type QuizResult } from '../components/QuizRow'
 import { ThemeSwitcher } from '../components/ThemeSwitcher'
 import Chatbot from '../components/Chatbot'
+import { useMaterialUpload } from '../materials/useMaterialUpload'
 import './Home.css'
 
 const sessions: Session[] = [
@@ -29,6 +30,7 @@ const quizzes: QuizResult[] = [
 ]
 
 export function Home() {
+  const upload = useMaterialUpload()
   //const [fontSize, setFontSize] = useState<number>(16);
   //useEffect(() => { document.documentElement.style.fontSize = `${fontSize}px`;}, [fontSize]);
 
@@ -49,8 +51,11 @@ export function Home() {
           <PageHeader
             title="Good afternoon, Maya"
             summary="You studied for 42 minutes across 3 sessions this week."
-            actionLabel="Upload material"
+            actionLabel={upload.label}
+            onAction={upload.open}
+            actionDisabled={upload.busy}
           />
+          {upload.element}
 
           <section className="home__section">
             <SectionHeader title="Pick up where you left off" meta="3 most recent" />

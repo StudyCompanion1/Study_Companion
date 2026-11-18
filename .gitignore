@@ -16,3 +16,5 @@ frontend/coverage/
 
 # test data
 test_data/
+# Uploaded course material (backend/app/storage.py)
+backend/uploads/

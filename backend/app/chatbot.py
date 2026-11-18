@@ -13,6 +13,14 @@ from zipfile import BadZipFile
 import pymupdf
 from PIL import UnidentifiedImageError
 
+import uuid
+from datetime import UTC, datetime
+
+from sqlmodel import select
+
+from app.db import SessionDep
+from app.models.chatbot_preferences import ChatbotPreferences
+
 from ai_processing.keyword_concept_extraction import (
     MODEL,
     SUPPORTED_EXTENSIONS,
@@ -38,6 +46,141 @@ class ChatHistoryMessage(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
+    suggestions: list[str] = Field(default_factory=list)
+
+
+def _parse_ai_response(response_text: str) -> tuple[str, list[str]]:
+    """Extract the chatbot reply and suggested follow-up questions."""
+
+    try:
+        result = json.loads(response_text)
+
+        if isinstance(result, dict) and isinstance(result.get("reply"), str):
+            reply = result["reply"].strip()
+
+            raw_suggestions = result.get("suggestions", [])
+
+            if not isinstance(raw_suggestions, list):
+                raw_suggestions = []
+
+            suggestions = [
+                item.strip()
+                for item in raw_suggestions
+                if isinstance(item, str) and item.strip()
+            ][:3]
+
+            return reply, suggestions
+
+    except (json.JSONDecodeError, TypeError):
+        pass
+
+    # Backward compatibility: treat ordinary text as the chatbot reply.
+    return response_text.strip(), []
+
+
+def _update_chatbot_preferences(
+    session,
+    user_id: uuid.UUID,
+    message: str,
+) -> ChatbotPreferences | None:
+    """Load saved preferences and update them when the user explicitly requests a change."""
+
+    # Test users may not have a real UUID.
+    if not isinstance(user_id, uuid.UUID):
+        return None
+
+    preferences = session.exec(
+        select(ChatbotPreferences).where(
+            ChatbotPreferences.user_id == user_id
+        )
+    ).first()
+
+    text = message.lower()
+
+    # Only save preferences when the user indicates an ongoing preference.
+    preference_request = any(
+        phrase in text
+        for phrase in (
+            "from now on",
+            "going forward",
+            "i prefer",
+            "i'd prefer",
+            "i would prefer",
+            "please always",
+        )
+    )
+
+    if not preference_request:
+        return preferences
+
+    if preferences is None:
+        preferences = ChatbotPreferences(user_id=user_id)
+
+    changed = False
+
+    if any(
+        phrase in text
+        for phrase in ("shorter answers", "more concise", "keep it brief")
+    ):
+        preferences.response_length = "concise"
+        changed = True
+
+    elif any(
+        phrase in text
+        for phrase in ("more detailed", "more detail", "in depth")
+    ):
+        preferences.response_length = "detailed"
+        changed = True
+
+    if any(
+        phrase in text
+        for phrase in ("step by step", "step-by-step")
+    ):
+        preferences.use_step_by_step = True
+        changed = True
+
+    if any(
+        phrase in text
+        for phrase in ("without steps", "no step-by-step")
+    ):
+        preferences.use_step_by_step = False
+        changed = True
+
+    if any(
+        phrase in text
+        for phrase in ("include examples", "use examples")
+    ):
+        preferences.use_examples = True
+        changed = True
+
+    if any(
+        phrase in text
+        for phrase in ("without examples", "no examples")
+    ):
+        preferences.use_examples = False
+        changed = True
+
+    if any(
+        phrase in text
+        for phrase in ("simpler language", "explain more simply", "plain language")
+    ):
+        preferences.explanation_style = "simple language"
+        changed = True
+
+    elif any(
+        phrase in text
+        for phrase in ("more conversational", "conversational tone")
+    ):
+        preferences.explanation_style = "conversational"
+        changed = True
+
+    if changed:
+        preferences.updated_at = datetime.now(UTC)
+        session.add(preferences)
+        session.commit()
+        session.refresh(preferences)
+
+    return preferences
 
 
 def _read_history(history_json: str) -> list[ChatHistoryMessage]:
@@ -118,6 +261,7 @@ def _build_prompt(
     message: str,
     history: list[ChatHistoryMessage],
     study_materials: str,
+    preferences: ChatbotPreferences | None = None,
 ) -> str:
     conversation = "\n".join(
         f"{item.role.upper()}: {item.content}"
@@ -141,6 +285,22 @@ def _build_prompt(
             "Answer using general study knowledge."
         )
 
+        # Add the user's saved response preferences to the prompt.
+    if preferences:
+        preference_section = f"""
+Saved response preferences:
+- Explanation style: {preferences.explanation_style}
+- Response length: {preferences.response_length}
+- Use step-by-step explanations: {preferences.use_step_by_step}
+- Include examples: {preferences.use_examples}
+"""
+    else:
+        preference_section = """
+No saved response preferences yet.
+Use clear, conversational explanations of moderate length.
+Break complicated topics into manageable steps and include examples when helpful.
+"""
+
     return f"""
 You are Study Companion, a supportive AI study assistant for learners
 with different learning needs, including dyslexia and ADHD.
@@ -157,6 +317,7 @@ Response guidelines:
   inside uploaded study materials.
 
 {source_section}
+{preference_section}
 
 Previous conversation:
 {conversation or "(No previous messages.)"}
@@ -166,12 +327,37 @@ Current user question:
 
 Respond directly to the current question. Use headings or bullets when they
 make the explanation easier to follow.
+
+After answering, generate up to 3 relevant suggested follow-up questions.
+
+The suggestions should:
+- Relate directly to the current question or uploaded study materials.
+- Help the student understand the topic more deeply.
+- Be phrased naturally as questions the student could ask.
+- Be short and easy to understand.
+- Avoid repeating the original question.
+
+Return your entire response as valid JSON using exactly this structure:
+
+{{
+    "reply": "Your complete answer to the student.",
+    "suggestions": [
+        "First suggested question?",
+        "Second suggested question?",
+        "Third suggested question?"
+    ]
+}}
+
+Return only the JSON object. Do not wrap it in Markdown code fences.
+If no useful follow-up questions exist, return an empty suggestions list.
 """.strip()
+
 
 
 @router.post("/api/chat", response_model=ChatResponse)
 async def chat(
     user: CurrentUser,
+    session: SessionDep,
     message: str = Form(...),
     history: str = Form("[]"),
     files: list[UploadFile] | None = File(default=None),
@@ -230,9 +416,22 @@ async def chat(
 
         file_contents.append((upload.filename, content))
 
+    # This try block must be OUTSIDE the for loop.
     try:
         study_materials = _extract_uploaded_materials(file_contents)
-        prompt = _build_prompt(message, parsed_history, study_materials)
+
+        preferences = _update_chatbot_preferences(
+            session,
+            user.id,
+            message,
+        )
+
+        prompt = _build_prompt(
+            message,
+            parsed_history,
+            study_materials,
+            preferences,
+        )
 
         client = get_gemini_client()
         response = client.models.generate_content(
@@ -240,14 +439,26 @@ async def chat(
             contents=prompt,
         )
 
-        reply = (response.text or "").strip()
+        response_text = (response.text or "").strip()
+
+        if not response_text:
+            raise HTTPException(
+                status_code=502,
+                detail="The AI assistant returned an empty response. Please try again.",
+            )
+
+        reply, suggestions = _parse_ai_response(response_text)
+
         if not reply:
             raise HTTPException(
                 status_code=502,
                 detail="The AI assistant returned an empty response. Please try again.",
             )
 
-        return ChatResponse(reply=reply)
+        return ChatResponse(
+            reply=reply,
+            suggestions=suggestions,
+        )
 
     except HTTPException:
         raise
