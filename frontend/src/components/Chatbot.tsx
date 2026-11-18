@@ -1,4 +1,3 @@
-
 import {
   useEffect,
   useRef,
@@ -8,16 +7,18 @@ import {
 } from 'react'
 import './Chatbot.css'
 
-//types
+// Types
 
 type Message = {
   role: 'user' | 'assistant'
   content: string
+  suggestions?: string[]
 }
 
 type ChatResponse = {
   reply?: string
   detail?: string
+  suggestions?: string[]
 }
 
 type ChatSize = {
@@ -25,7 +26,7 @@ type ChatSize = {
   height: number
 }
 
-//constants
+// Constants
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
@@ -39,7 +40,7 @@ const DEFAULT_CHAT_SIZE: ChatSize = {
   height: 600,
 }
 
-//chatbot icon
+// Chatbot icon
 
 function ChatIcon() {
   return (
@@ -61,7 +62,7 @@ function ChatIcon() {
   )
 }
 
-//helper functions 
+// Resize helpers
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(value, max))
@@ -69,7 +70,6 @@ function clamp(value: number, min: number, max: number) {
 
 function getChatLimits() {
   const mobile = window.innerWidth <= 768
-
   const availableWidth = Math.max(200, window.innerWidth - 32)
 
   const availableHeight = Math.max(
@@ -102,11 +102,8 @@ function constrainSize(size: ChatSize): ChatSize {
   }
 }
 
-//main chatbot components 
-
 export default function Chatbot() {
-
- // open and close 
+  // Open and close
 
   const [isOpen, setIsOpen] = useState(false)
 
@@ -122,14 +119,13 @@ export default function Chatbot() {
     toggleButtonRef.current?.focus()
   }
 
-  // Focus the input when the chat opens.
   useEffect(() => {
     if (isOpen) {
       chatInputRef.current?.focus()
     }
   }, [isOpen])
 
- //chat resize 
+  // Chat resizing
 
   const [chatSize, setChatSize] = useState<ChatSize>(
     DEFAULT_CHAT_SIZE,
@@ -144,7 +140,6 @@ export default function Chatbot() {
     height: number
   } | null>(null)
 
-  // Keyboard-accessible resizing through buttons.
   function changeChatSize(amount: number) {
     const current = constrainSize(chatSize)
 
@@ -160,7 +155,6 @@ export default function Chatbot() {
     )
   }
 
-  // Start resizing from the top-left corner.
   function startResize(event: PointerEvent<HTMLButtonElement>) {
     if (event.pointerType === 'mouse' && event.button !== 0) {
       return
@@ -180,12 +174,10 @@ export default function Chatbot() {
     event.currentTarget.setPointerCapture(event.pointerId)
   }
 
-  // Resize the entire chat window.
   function handleResize(event: PointerEvent<HTMLButtonElement>) {
     if (!resizeStart.current) return
 
     const start = resizeStart.current
-
     const deltaX = start.x - event.clientX
     const deltaY = start.y - event.clientY
 
@@ -201,11 +193,9 @@ export default function Chatbot() {
     if (!resizeStart.current) return
 
     resizeStart.current = null
-
     setSizeAnnouncement('Chat window size updated')
   }
 
-  // Keep the window inside the screen if resized.
   useEffect(() => {
     function handleWindowResize() {
       setChatSize((current) => constrainSize(current))
@@ -218,7 +208,7 @@ export default function Chatbot() {
     }
   }, [])
 
-  //chat msg 
+  // Messages
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -237,7 +227,6 @@ export default function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
-  // Scroll only the message area, not the dashboard.
   useEffect(() => {
     const container = messagesContainerRef.current
 
@@ -246,7 +235,8 @@ export default function Chatbot() {
     }
   }, [messages, isSending])
 
-//file attached 
+  // Attachments
+
   function addFiles(selected: FileList | null) {
     if (!selected) return
 
@@ -305,12 +295,15 @@ export default function Chatbot() {
     setError('')
   }
 
-  //send msg to gemini backend 
+  // Send a message to the backend
 
-  async function sendMessage(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function sendMessage(
+    event?: FormEvent<HTMLFormElement>,
+    suggestedQuestion?: string,
+  ) {
+    event?.preventDefault()
 
-    const question = input.trim()
+    const question = (suggestedQuestion ?? input).trim()
 
     if (!question || isSending) return
 
@@ -372,6 +365,15 @@ export default function Chatbot() {
         {
           role: 'assistant',
           content: data.reply!,
+          suggestions: Array.isArray(data.suggestions)
+            ? data.suggestions
+                .filter(
+                  (item): item is string =>
+                    typeof item === 'string' &&
+                    item.trim().length > 0,
+                )
+                .slice(0, 3)
+            : [],
         },
       ])
     } catch (err) {
@@ -385,7 +387,36 @@ export default function Chatbot() {
     }
   }
 
-  //start new chat
+  // Download the current conversation
+
+  function downloadTranscript() {
+    // The first message is the widget's greeting or reset notice.
+    const transcript = messages
+      .slice(1)
+      .map(({ role, content }) => {
+        const speaker = role === 'user' ? 'You' : 'Study Companion'
+        return `${speaker}:\n${content}`
+      })
+      .join('\n\n')
+
+    const file = new Blob([transcript, '\n'], {
+      type: 'text/plain;charset=utf-8',
+    })
+
+    const url = URL.createObjectURL(file)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = 'study-companion-transcript.txt'
+
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+
+  // Start a new chat
 
   function startNewChat() {
     if (isSending) return
@@ -403,12 +434,8 @@ export default function Chatbot() {
     chatInputRef.current?.focus()
   }
 
- //render chatbot window 
-
   return (
     <div className="chatbot-widget">
-
-      {/* Floating Chat Button */}
       <button
         ref={toggleButtonRef}
         type="button"
@@ -430,7 +457,6 @@ export default function Chatbot() {
         )}
       </button>
 
-      {/* Floating Resizable Chat Window */}
       <div
         id="study-chat-panel"
         className="chatbot-window"
@@ -442,8 +468,6 @@ export default function Chatbot() {
           }px))`,
         }}
       >
-
-        {/* Top-left Resize Handle */}
         <button
           type="button"
           className="chatbot-resize-handle"
@@ -461,10 +485,7 @@ export default function Chatbot() {
           className="study-chat"
           aria-labelledby="study-chat-title"
         >
-
-          {/* Chat Header */}
           <header className="study-chat__header">
-
             <div className="study-chat__header-info">
               <h2 id="study-chat-title">
                 Study Companion Chat
@@ -475,9 +496,7 @@ export default function Chatbot() {
               </p>
             </div>
 
-            {/* Accessible Window Controls */}
             <div className="study-chat__header-actions">
-
               <button
                 type="button"
                 className="study-chat__secondary-button"
@@ -504,15 +523,22 @@ export default function Chatbot() {
               >
                 New chat
               </button>
+
+              <button
+                type="button"
+                className="study-chat__secondary-button"
+                onClick={downloadTranscript}
+                disabled={isSending || messages.length < 2}
+              >
+                Download transcript
+              </button>
             </div>
 
             <span className="sr-only" role="status">
               {sizeAnnouncement}
             </span>
-
           </header>
 
-          {/* Chat Messages */}
           <div
             ref={messagesContainerRef}
             className="study-chat__messages"
@@ -533,6 +559,34 @@ export default function Chatbot() {
                 </span>
 
                 <p>{message.content}</p>
+
+                {message.role === 'assistant' &&
+                  message.suggestions &&
+                  message.suggestions.length > 0 && (
+                    <div className="study-chat__suggestions">
+                      <span className="study-chat__suggestions-title">
+                        Suggested questions:
+                      </span>
+
+                      <div className="study-chat__suggestions-list">
+                        {message.suggestions.map(
+                          (suggestion, suggestionIndex) => (
+                            <button
+                              key={`${suggestionIndex}-${suggestion}`}
+                              type="button"
+                              className="study-chat__secondary-button study-chat__suggestion-button"
+                              onClick={() =>
+                                sendMessage(undefined, suggestion)
+                              }
+                              disabled={isSending}
+                            >
+                              {suggestion}
+                            </button>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )}
               </article>
             ))}
 
@@ -548,7 +602,6 @@ export default function Chatbot() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Attached Study Materials */}
           {files.length > 0 && (
             <div
               className="study-chat__attachments"
@@ -579,7 +632,6 @@ export default function Chatbot() {
             </div>
           )}
 
-          {/* Message Input */}
           <form
             className="study-chat__form"
             onSubmit={sendMessage}
@@ -602,8 +654,6 @@ export default function Chatbot() {
             />
 
             <div className="study-chat__actions">
-
-              {/* Attach Notes */}
               <div>
                 <input
                   ref={fileInputRef}
@@ -628,7 +678,6 @@ export default function Chatbot() {
                 </label>
               </div>
 
-              {/* Send Message */}
               <button
                 type="submit"
                 className="study-chat__send-button"
@@ -638,7 +687,6 @@ export default function Chatbot() {
                   ? 'Sending…'
                   : 'Send message'}
               </button>
-
             </div>
 
             <p className="study-chat__hint">
@@ -655,9 +703,7 @@ export default function Chatbot() {
                 {error}
               </p>
             )}
-
           </form>
-
         </section>
       </div>
     </div>
