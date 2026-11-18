@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -8,12 +8,15 @@ export default defineConfig({
     proxy: {
       // 127.0.0.1, not localhost: uvicorn binds IPv4 only, and on some machines
       // Node resolves localhost to ::1 (IPv6), which makes the proxy fail
-      '/api': 'http://127.0.0.1:8000'
+      // (E2E tests set API_PROXY_TARGET to their own test backend; see playwright.config.ts)
+      '/api': process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:8000'
     },
   },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
+    // e2e/ holds Playwright tests, which run with `npm run test:e2e`, not Vitest
+    exclude: [...configDefaults.exclude, 'e2e/**'],
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
