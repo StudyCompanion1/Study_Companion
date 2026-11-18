@@ -9,7 +9,15 @@ export type Material = {
   id: string
   collection_id: string | null
   title: string
+  /** The name it was uploaded with, e.g. "Week 1.pdf". */
+  file_name: string
   file_type: MaterialFileType
+  /** Its place in the collection's list, lowest first (the student can reorder). */
+  position: number
+  /** Pages or slides; null when it has none (text files, images). */
+  page_count: number | null
+  /** null = never opened. */
+  last_opened_at: string | null
   created_at: string
 }
 
@@ -51,8 +59,18 @@ export async function uploadMaterial(file: File, collectionId?: string): Promise
   return parse<Material>(await fetch('/api/materials', { method: 'POST', body }))
 }
 
-/** The logged-in student's uploads, newest first; only one collection's when given its id. */
+/** The logged-in student's uploads in their chosen order; only one collection's when given its id. */
 export async function listMaterials(collectionId?: string, signal?: AbortSignal): Promise<Material[]> {
   const query = collectionId ? `?collection_id=${encodeURIComponent(collectionId)}` : ''
   return parse<Material[]>(await fetch(`/api/materials${query}`, { cache: 'no-store', signal }))
+}
+
+/** Save a collection's new order. Lists every file in it, first to last. */
+export async function reorderMaterials(collectionId: string, materialIds: string[]): Promise<void> {
+  const res = await fetch('/api/materials/order', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ collection_id: collectionId, material_ids: materialIds }),
+  })
+  if (!res.ok) throw new ApiError(res.status, errorMessage(await res.json().catch(() => null)))
 }

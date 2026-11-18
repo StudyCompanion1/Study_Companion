@@ -17,6 +17,11 @@
   height: 100dvh;
   max-height: 100vh;
   overflow-y: auto;
+
+  /* Sticky makes the rail its own layer, so the Settings panel inside it can only sit as high as
+     the rail does. Lift the rail above the page, or positioned page content (clickable rows,
+     sticky headers) draws over the open panel. */
+  z-index: 10;
 }
 
 .nav-rail__mark {

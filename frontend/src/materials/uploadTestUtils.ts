@@ -4,7 +4,8 @@ import type { Material } from './api'
 /* Test-only helpers shared by the F1 tests (useMaterialUpload*.test.tsx, CollectionMaterials.test.tsx). */
 
 export const material: Material = {
-  id: '1', collection_id: null, title: 'Week 1', file_type: 'pdf', created_at: '2026-11-12T00:00:00Z',
+  id: '1', collection_id: null, title: 'Week 1', file_name: 'Week 1.pdf', file_type: 'pdf', position: 0,
+  page_count: 3, last_opened_at: null, created_at: '2026-11-12T00:00:00Z',
 }
 
 /** The hidden <input type="file"> that the "Upload material" button opens. */

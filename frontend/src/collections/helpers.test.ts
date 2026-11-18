@@ -9,6 +9,7 @@ import {
   materialLabel,
   notesFor,
   plural,
+  searchNotes,
   sortByOpened,
   termSummary,
 } from './helpers'
@@ -110,7 +111,7 @@ describe('mock data matches Figma labels', () => {
   test('card and row times', () => {
     expect(formatRelative(collections[0].updatedAt, MOCK_NOW)).toBe('2 h ago')
     expect(formatRelative(collections[1].updatedAt, MOCK_NOW)).toBe('Yesterday')
-    expect(formatRelative(notes[9].openedAt, MOCK_NOW)).toBe('3 weeks ago')
+    expect(formatRelative(notes[9].openedAt!, MOCK_NOW)).toBe('3 weeks ago')
   })
 })
 
@@ -135,5 +136,27 @@ describe('labels for screen 2', () => {
 
   test('BIO 201 has as many notes as its card says', () => {
     expect(notesFor('bio201', notes)).toHaveLength(collections[0].noteCount)
+  })
+})
+
+describe('uploaded files as notes', () => {
+  const unopened = { ...notes[0], id: 'x', title: 'Never opened', openedAt: null, length: null }
+
+  test('formatLength shows a dash when there is nothing to count', () => {
+    expect(formatLength(null)).toBe('—')
+  })
+
+  test('sortByOpened puts never-opened notes last', () => {
+    expect(sortByOpened([unopened, notes[1], notes[0]]).map((note) => note.id)).toEqual(['n1', 'n2', 'x'])
+  })
+
+  test('materialLabel knows images', () => {
+    expect(materialLabel('image')).toBe('Image')
+  })
+
+  test('searchNotes matches the title or the file name, ignoring case', () => {
+    expect(searchNotes(notes, '  MITOCHONDRIA ').map((note) => note.id)).toEqual(['n2'])
+    expect(searchNotes(notes, 'campbell').map((note) => note.id)).toEqual(['n3', 'n8'])
+    expect(searchNotes(notes, '   ')).toBe(notes)
   })
 })
