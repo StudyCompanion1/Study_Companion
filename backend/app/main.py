@@ -9,6 +9,10 @@ from app.auth.router import router as auth_router
 from app.db import create_db_and_tables
 from app.chatbot import router as chatbot_router
 from app.collections import router as collections_router
+from app.materials.router import router as materials_router
+from app.materials.notes import router as notes_router
+from app.materials.order import router as material_order_router
+from app.materials.viewer import router as material_viewer_router
 import pymupdf
 from fastapi import FastAPI, File, HTTPException, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,6 +35,10 @@ app = FastAPI(title="Study Companion API", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(chatbot_router)
 app.include_router(collections_router)
+app.include_router(materials_router)
+app.include_router(material_order_router)
+app.include_router(material_viewer_router)
+app.include_router(notes_router)
 
 # react / vite frontend
 app.add_middleware(

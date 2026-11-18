@@ -50,6 +50,11 @@
   cursor: pointer;
 }
 
+.page-header__action:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 /* Tier 2 · Component's own width — Foundations → Responsive: PageHeader stacks the action under
    the title below 560px (35rem) of available width. */
 @container page (width < 35rem) {

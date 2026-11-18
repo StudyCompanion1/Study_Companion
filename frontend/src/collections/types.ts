@@ -23,7 +23,7 @@ export interface NewCollection {
 
 export type LoadStatus = 'loading' | 'ready' | 'error'
 
-export type MaterialKind = 'slides' | 'pdf' | 'doc' | 'audio'
+export type MaterialKind = 'slides' | 'pdf' | 'doc' | 'audio' | 'image'
 export type LengthUnit = 'slides' | 'pages' | 'min'
 
 /** One note inside a collection (one lecture, reading or recording). */
@@ -37,9 +37,12 @@ export interface Note {
     /** True when a lecture recording is attached as well ("+ Audio"). */
     hasAudio?: boolean
   }
-  length: { value: number; unit: LengthUnit }
-  /** ISO date-time the student last opened it. */
-  openedAt: string
+  /** null = no pages to count (text files, images). */
+  length: { value: number; unit: LengthUnit } | null
+  /** ISO date-time the student last opened it; null = never opened. */
+  openedAt: string | null
   /** null = "No quiz yet". */
   mastery: MasteryLevel | null
+  /** Where the row leads (the material view); the mock notes have none. */
+  href?: string
 }

@@ -3,6 +3,7 @@
    stroke to follow the surrounding text colour"). */
 
 const ICONS = {
+  groups: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: 'M16 20V18C16 16.3431 14.6569 15 13 15H7C5.34315 15 4 16.3431 4 18V20M10 11C11.6569 11 13 9.65685 13 8C13 6.34315 11.6569 5 10 5C8.34315 5 7 6.34315 7 8C7 9.65685 8.34315 11 10 11ZM16 11C17.6569 11 19 9.65685 19 8C19 6.34315 17.6569 5 16 5M18 15C19.6569 15 21 16.3431 21 18V20' },
   home: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: "M3 10.5L12 3L21 10.5V20C21 20.2652 20.8946 20.5196 20.7071 20.7071C20.5196 20.8946 20.2652 21 20 21H15V15H9V21H4C3.73478 21 3.48043 20.8946 3.29289 20.7071C3.10536 20.5196 3 20.2652 3 20V10.5Z" },
   collections: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: "M6 5H18M9 2H15M3 8H21V20H3V8Z" },
   quiz: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: "M10 6H20M10 12H20M10 18H20M3.5 6L5 7.5L8 4.5M3.5 12L5 13.5L8 10.5M3.5 18L5 19.5L8 16.5" },
@@ -25,6 +26,12 @@ const ICONS = {
   highlighter: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: "M7 12L12 17L20 9L15 4L7 12ZM7 12L4 15L4 18L7 18L9 16M3 21L13 21" },
   speaker: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: "M16.5 8.5C17.42 9.43 17.93 10.69 17.93 12C17.93 13.31 17.42 14.57 16.5 15.5M19 6C20.59 7.59 21.48 9.75 21.48 12C21.48 14.25 20.59 16.41 19 18M4 9L8 9L13 5L13 19L8 15L4 15L4 9Z" },
   outline: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: "M4 5L20 5M9 12L20 12M9 19L20 19M5 5L5 19L8 19M5 12L8 12" },
+  // Not from Figma yet: drawn in the same style for reordering files in a collection and the file view
+  arrowLeft: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: 'M19 12H5M12 19L5 12L12 5' },
+  plus: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: 'M12 5V19M5 12H19' },
+  arrowUp: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: 'M12 19V5M5 12L12 5L19 12' },
+  arrowDown: { viewBox: '0 0 24 24', strokeWidth: 1.75, d: 'M12 5V19M19 12L12 19L5 12' },
+  grip: { viewBox: '0 0 24 24', strokeWidth: 2.5, d: 'M9 6H9.01M15 6H15.01M9 12H9.01M15 12H15.01M9 18H9.01M15 18H15.01' },
 } as const
 
 export type IconName = keyof typeof ICONS
