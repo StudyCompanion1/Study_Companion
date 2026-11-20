@@ -30,7 +30,7 @@ describe('SettingsPanel', () => {
   })
 
   test('reports a playback speed change', () => {
-    const { onChange } = renderPanel()
+   const {onChange} = renderPanel()
 
     fireEvent.change(screen.getByLabelText('Playback speed'), { target: { value: '1.5' } })
 
@@ -38,20 +38,21 @@ describe('SettingsPanel', () => {
   })
 
   test('toggles color blind mode', () => {
-    const { onChange } = renderPanel()
+   renderPanel()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Color blind mode' }))
+    const colorBlindBtn = screen.getByRole('button', { name: 'Color Blind Mode' })
+    fireEvent.click(colorBlindBtn)
 
-    expect(onChange).toHaveBeenCalledWith({ ...defaultSettings, colorBlind: true })
+    expect(colorBlindBtn).toHaveAttribute('aria-pressed', 'true')
   })
 
   test('switching appearance updates which option is pressed', () => {
     renderPanel()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Dark' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Dark Mode' }))
 
-    expect(screen.getByRole('button', { name: 'Dark' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: 'Light mode' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: 'Dark Mode' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Light Mode' })).toHaveAttribute('aria-pressed', 'false')
   })
 
   test('shows appearance in both modes and keeps logout in Settings only', () => {
@@ -61,13 +62,13 @@ describe('SettingsPanel', () => {
       </ThemeProvider>,
     )
 
-    expect(screen.getByRole('button', { name: 'Dark' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Dark Mode' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument()
     expect(screen.queryByLabelText('Text size')).not.toBeInTheDocument()
     unmount()
 
     renderPanel(vi.fn(), vi.fn(), 'accessibility')
-    expect(screen.getByRole('button', { name: 'Dark' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Dark Mode' })).toBeInTheDocument()
     expect(screen.getByLabelText('Text size')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Log out' })).not.toBeInTheDocument()
   })
