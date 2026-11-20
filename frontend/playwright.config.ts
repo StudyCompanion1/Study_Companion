@@ -37,6 +37,8 @@ export default defineConfig({
   reporter: isCI ? [['list'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'on-failure' }]],
 
   use: {
+    // Optional local fallback when only an installed Chrome is available.
+    channel: process.env.PLAYWRIGHT_CHROMIUM_CHANNEL,
     baseURL: `http://localhost:${WEB_PORT}`,
     // On failure, keep a screenshot and a step-by-step trace (open it with: npx playwright show-trace <file>)
     screenshot: 'only-on-failure',
@@ -49,7 +51,7 @@ export default defineConfig({
     {
       name: 'api',
       // Wipe the test database, then start FastAPI against it
-      command: `node "${path.join(FRONTEND_DIR, 'e2e/reset-db.mjs')}" && uv run fastapi run app/main.py --host 127.0.0.1 --port ${API_PORT}`,
+      command: `node "${path.join(FRONTEND_DIR, 'e2e/reset-db.mjs')}" && uv run python -m uvicorn tests.e2e_server:app --host 127.0.0.1 --port ${API_PORT}`,
       cwd: BACKEND_DIR,
       url: `${API_URL}/docs`,
       env: {

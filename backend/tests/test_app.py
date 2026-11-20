@@ -1,13 +1,29 @@
 """Covers app wiring that test_auth.py doesn't exercise: health check, lifespan/db setup, config."""
 
 import importlib
+import sys
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import select
+from sqlalchemy.pool import StaticPool
+from sqlmodel import create_engine, select
+
+import app.db as database
 
 from app.db import create_db_and_tables, engine, get_session
 from app.main import app
+
+
+@pytest.fixture(autouse=True)
+def isolated_app_engine(monkeypatch):
+    """Startup tests must never create tables in the developer's database."""
+    test_engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    monkeypatch.setattr(database, "engine", test_engine)
+    monkeypatch.setattr(sys.modules[__name__], "engine", test_engine)
+    try:
+        yield
+    finally:
+        test_engine.dispose()
 
 
 def test_health_check(client):

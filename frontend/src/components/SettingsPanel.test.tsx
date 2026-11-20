@@ -1,8 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import SettingsPanel from './SettingsPanel.tsx'
 import { defaultSettings } from './Settings.ts'
 import { ThemeProvider } from '../theme/ThemeContext.tsx'
+
+afterEach(() => vi.unstubAllGlobals())
 
 function renderPanel(onChange = vi.fn(), onClose = vi.fn(), panel: 'settings' | 'accessibility' = 'accessibility') {
   render(
@@ -14,6 +16,26 @@ function renderPanel(onChange = vi.fn(), onClose = vi.fn(), panel: 'settings' | 
 }
 
 describe('SettingsPanel', () => {
+  test('shows a logout failure and lets the student retry', async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new TypeError('offline'))
+    vi.stubGlobal('fetch', fetchMock)
+    renderPanel(vi.fn(), vi.fn(), 'settings')
+    fireEvent.click(screen.getByRole('button', { name: 'Log out' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not log out. Please try again.')
+    expect(screen.getByRole('button', { name: 'Log out' })).toBeEnabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Log out' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not log out')
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  test('switches high contrast and light appearance', () => {
+    renderPanel()
+    fireEvent.click(screen.getByRole('button', { name: 'High Contrast' }))
+    expect(screen.getByRole('button', { name: 'High Contrast' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByRole('button', { name: 'Light Mode' }))
+    expect(screen.getByRole('button', { name: 'Light Mode' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'High Contrast' })).toHaveAttribute('aria-pressed', 'false')
+  })
   test('calls onClose from the close button', () => {
     const { onClose } = renderPanel()
 
