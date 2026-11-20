@@ -7,12 +7,12 @@ import { CollectionsRoute } from './collections/CollectionsRoute'
 import { matchCollectionsRoute } from './collections/routes'
 
 
-function CurrentPage() {
+function CurrentPage({ user }: { user: User }) {
   const collectionsRoute = matchCollectionsRoute(window.location.pathname)
   if (collectionsRoute) {
     return <CollectionsRoute route={collectionsRoute} />
   }
-  return <Home />
+  return <Home user={user} />
 }
 
 function App() {
@@ -31,7 +31,7 @@ function App() {
       ) : user === null ? (
         <AuthForm onLoggedIn={setUser} />
       ) : (
-        <CurrentPage />
+        <CurrentPage user={user} />
       )}
     </ThemeProvider>
   )
