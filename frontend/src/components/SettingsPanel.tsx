@@ -53,7 +53,7 @@ async function handleLogout() {
     aria-pressed={theme === 'dark'}
     onClick={() => setTheme('dark')}
   >
-    Dark
+    Dark Mode
   </button>
 
   <button
@@ -62,7 +62,7 @@ async function handleLogout() {
     aria-pressed={theme === 'high-contrast'}
     onClick={() => setTheme('high-contrast')}
   >
-    High contrast
+    High Contrast
   </button>
 
   <button
@@ -71,24 +71,28 @@ async function handleLogout() {
     aria-pressed={theme === 'light'}
     onClick={() => setTheme('light')}
   >
-    Light mode
+    Light Mode
   </button>
 
-  {panel === 'accessibility' && placement === 'sidebar' && <>
     <button
       className="sc-settings__option"
       type="button"
-      aria-pressed={value.colorBlind}
+
+      /* aria-pressed={value.colorBlind} */
+
+      aria-pressed={theme === 'color-blind'}
       aria-describedby={`${id}-color-help`}
-      onClick={() => update({ colorBlind: !value.colorBlind })}
+      onClick={() => setTheme('color-blind')}
+      
+      /* onClick={() => update({ colorBlind: !value.colorBlind })} */
     >
-      Color blind mode
+      Color Blind Mode
     </button>
 
     <p id={`${id}-color-help`} className="sc-settings__help">
-      Use colors that are easier to distinguish.
+      Choose the appearance that feels best for you.
     </p>
-  </>}
+  
 </section>
     </div>
 
