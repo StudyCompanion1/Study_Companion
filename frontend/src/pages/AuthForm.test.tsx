@@ -183,3 +183,33 @@ describe('AuthForm password reveal', () => {
     expect(screen.getByRole('button', { name: /hide\s*password/i })).toBeInTheDocument()
   })
 })
+
+describe('AuthForm guest sessions', () => {
+  test('reports the guest returned by the backend', async () => {
+    const guest = { id: 'guest-id', name: 'Guest', email: null, role: 'guest' }
+    const fetchMock = mockFetch(200, guest)
+    vi.stubGlobal('fetch', fetchMock)
+    const onLoggedIn = vi.fn()
+    renderForm({ onLoggedIn })
+    fireEvent.click(screen.getByRole('button', { name: 'Guest login' }))
+    await waitFor(() => expect(onLoggedIn).toHaveBeenCalledWith(guest))
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/auth/guest')
+  })
+
+  test.each([
+    [new TypeError('offline'), 'We couldn’t reach the server'],
+    [new Error('server failed'), 'We couldn’t start a guest session'],
+  ])('allows a guest login retry after %s', async (error, message) => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(error)
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: 'guest', role: 'guest' }), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const onLoggedIn = vi.fn()
+    renderForm({ onLoggedIn })
+    fireEvent.click(screen.getByRole('button', { name: 'Guest login' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    expect(onLoggedIn).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Guest login' })).toBeEnabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Guest login' }))
+    await waitFor(() => expect(onLoggedIn).toHaveBeenCalledTimes(1))
+  })
+})
