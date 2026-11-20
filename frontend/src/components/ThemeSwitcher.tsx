@@ -4,7 +4,8 @@ import './ThemeSwitcher.css'
 const LABELS: Record<Theme, string> = {
   light: 'Light',
   dark: 'Dark',
-  'high-contrast': 'High contrast',
+  'high-contrast': 'High Contrast',
+  'color-blind': 'Color Blind',
 }
 
 export function ThemeSwitcher() {

@@ -48,10 +48,10 @@ describe('NavRail', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
     expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Dark' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Dark Mode' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Color Blind Mode' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument()
     expect(screen.queryByLabelText('Text size')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Color blind mode' })).not.toBeInTheDocument()
   })
 
   test('shows Buddy beneath Search with an AI graphic', () => {

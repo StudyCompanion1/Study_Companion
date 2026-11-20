@@ -73,6 +73,33 @@
   --mastery-strong-soft: #e3eefc;
 }
 
+/* change hex codes to accomodate for color-blindness */
+
+[data-theme='color-blind'] {
+  --surface: #f8fafc;
+  --surface-raised: #ffffff;
+  --surface-sunken: #eef2f6;
+  --ink: #0f172a;
+  --ink-muted: #475569;
+  --line: #64748b;
+  --line-strong: #1e293b;
+  --primary: #0057b8;
+  --primary-soft: #eff6ff;
+  --on-primary: #ffffff;
+  --focus: #6d28d9;
+  --hl-green: #d1fae5;
+  --hl-yellow: #fef3c7;
+  --hl-blue: #dbeafe;
+  --hl-pink: #f3e8ff;
+  --mastery-low: #9a3412;
+  --mastery-low-soft: #ffedd5;
+  --mastery-review: #78350f;
+  --mastery-review-soft: #fef3c7;
+  --mastery-strong: #0057b8;
+  --mastery-strong-soft: #eff6ff;
+}
+
+
 /* All lengths below are in rem (1rem = 16px at the browser default), per Foundations →
    Responsive: "implement [sizes] in rem/em so they grow with the Text size setting" (WCAG 1.4.10).
    Breakpoints/container-query thresholds follow the same rule — see component CSS files. */
