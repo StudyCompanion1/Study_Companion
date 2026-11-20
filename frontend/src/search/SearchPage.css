@@ -1,0 +1,62 @@
+.search-screen {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--surface);
+}
+
+.search-screen__main {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.search-screen__page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: var(--page-max);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  box-sizing: border-box;
+  container-type: inline-size;
+  container-name: page;
+}
+
+.search-screen__bar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-5);
+  width: 100%;
+}
+
+.search-screen__field {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+.search-screen__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* Tier 1 · App shell — gutters shrink below 768px (48rem), together with NavRail. */
+@media (width < 48rem) {
+  .search-screen__page {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+    padding-bottom: calc(var(--space-4) + 6rem);
+  }
+}
+
+/* Tier 2 · Component's own width — the search bar stacks once it's too narrow for the field and
+   button side by side, matching the field/action stacking rule used elsewhere in Foundations. */
+@container page (width < 32.5rem) {
+  .search-screen__bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

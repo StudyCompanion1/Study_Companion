@@ -10,7 +10,7 @@ const ITEMS: { label: string; icon: IconName; href: string }[] = [
   { label: 'Home', href: '/', icon: 'home' },
   { label: 'Collections', href: '/collections', icon: 'collections' },
   { label: 'Practice', href: '#', icon: 'target' },
-  { label: 'Search', href: '#', icon: 'search' },
+  { label: 'Search', href: '/search', icon: 'search' },
   { label: 'Groups', href: '#', icon: 'groups' },
 ]
 
