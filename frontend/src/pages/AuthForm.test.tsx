@@ -46,12 +46,14 @@ describe('AuthForm (login)', () => {
     expect(screen.getByRole('heading', { name: 'Accessibility' })).toBeInTheDocument()
     expect(screen.getByLabelText('Text size')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Appearance' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Light mode' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Light Mode' })).toBeInTheDocument()
     expect(screen.queryByLabelText('Playback speed')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Color blind mode' })).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Dark' }))
-    expect(screen.getByRole('button', { name: 'Dark' })).toHaveAttribute('aria-pressed', 'true')
+expect(screen.getByRole('button', { name: 'Color Blind Mode' })).toBeInTheDocument()
+
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dark Mode' }))
+    expect(screen.getByRole('button', { name: 'Dark Mode' })).toHaveAttribute('aria-pressed', 'true')
   })
 
   test('applies text size and closes the accessibility menu', () => {
