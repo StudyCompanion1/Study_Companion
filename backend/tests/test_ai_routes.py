@@ -5,6 +5,7 @@ import pytest
 
 from app import main
 
+from tests.materials_helpers import register
 
 @pytest.fixture(autouse=True)
 def isolate_providers(monkeypatch):
@@ -17,6 +18,9 @@ def isolate_providers(monkeypatch):
     ("/api/analyze", "analyze_pdf"), ("/api/study-guide", "generate_study_guide"),
 ])
 def test_ai_upload_passes_file_to_processor_and_removes_temporary_copy(client, monkeypatch, route, processor):
+    # Register/authenticate a user first so requests don't return 401 Unauthorized
+    register(client)
+    
     paths = []
 
     def process(filename):
