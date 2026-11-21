@@ -41,6 +41,7 @@ def test_ai_upload_passes_file_to_processor_and_removes_temporary_copy(client, m
 
 @pytest.mark.parametrize("route", ["/api/analyze", "/api/study-guide"])
 def test_ai_upload_rejects_unsupported_and_oversized_files_before_processing(client, monkeypatch, route):
+    register(client)
     monkeypatch.setattr(main, "MAX_UPLOAD_BYTES", 4)
     unsupported = client.post(route, files={"file": ("run.exe", b"x")})
     oversized = client.post(route, files={"file": ("notes.txt", b"12345")})
@@ -51,6 +52,7 @@ def test_ai_upload_rejects_unsupported_and_oversized_files_before_processing(cli
 
 
 def test_reader_error_returns_bad_request_and_cleans_up(client, monkeypatch):
+    register(client)
     paths = []
 
     def invalid(filename):
@@ -65,6 +67,7 @@ def test_reader_error_returns_bad_request_and_cleans_up(client, monkeypatch):
 
 
 def test_search_route_passes_query_and_rejects_empty_queries(client, monkeypatch):
+    register(client)
     search = Mock(return_value="Biology\nhttps://example.com")
     monkeypatch.setattr(main, "ground_brave_search", search)
     response = client.post("/api/url-resources", params={"query": "cell biology"})
