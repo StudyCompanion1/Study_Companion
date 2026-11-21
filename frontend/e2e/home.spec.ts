@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { expectLoggedIn, loginAsGuest } from './helpers/auth.ts'
+import { collectionCard, createCollection, openCollections } from './helpers/collections.ts'
 
 /*
  * Home page tests (Test Case Tracker: TC-013 Home works, TC-014 navigation, TC-016 Home shows its features).
@@ -18,10 +19,25 @@ test.describe('Home page (TC-013, TC-016)', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Recent quizzes' })).toBeVisible()
   })
 
-  test('shows recent sessions with a way to resume each one', async ({ page }) => {
-    const sessions = page.locator('.home__sessions')
-    await expect(sessions.getByRole('link')).not.toHaveCount(0)
-    await expect(sessions.getByText('Resume').first()).toBeVisible()
+  // "Pick up where you left off" shows the user's real collections (since PR #45), not sample sessions
+  test('a new user is told they have no collections yet', async ({ page }) => {
+    await expect(page.getByText('No collections yet. Create one to get started.')).toBeVisible()
+  })
+
+  test('shows up to 3 of the most recent collections, each opening the collection', async ({ page }) => {
+    await openCollections(page)
+    for (const name of ['Biology', 'Chemistry', 'History', 'Psychology']) {
+      await createCollection(page, { name })
+    }
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Home', exact: true }).click()
+
+    const recent = page.locator('.home__sessions').getByRole('link')
+    await expect(recent).toHaveCount(3)
+    await expect(collectionCard(page, 'Psychology')).toBeVisible()
+    await expect(collectionCard(page, 'Biology')).toHaveCount(0) // the oldest one is left out
+
+    await collectionCard(page, 'Psychology').click()
+    await expect(page.getByRole('heading', { level: 1, name: 'Psychology' })).toBeVisible()
   })
 
   test('every practice button says which topic it practises', async ({ page }) => {
