@@ -5,14 +5,18 @@ import { ThemeProvider } from './theme/ThemeContext'
 import { Home } from './pages/Home'
 import { CollectionsRoute } from './collections/CollectionsRoute'
 import { matchCollectionsRoute } from './collections/routes'
+import { SearchPage } from './search/SearchPage'
 
 
-function CurrentPage() {
+function CurrentPage({ user }: { user: User }) {
   const collectionsRoute = matchCollectionsRoute(window.location.pathname)
   if (collectionsRoute) {
     return <CollectionsRoute route={collectionsRoute} />
   }
-  return <Home />
+  if (window.location.pathname === '/search') {
+    return <SearchPage />
+  }
+  return <Home user={user} />
 }
 
 function App() {
@@ -31,7 +35,7 @@ function App() {
       ) : user === null ? (
         <AuthForm onLoggedIn={setUser} />
       ) : (
-        <CurrentPage />
+        <CurrentPage user={user} />
       )}
     </ThemeProvider>
   )
