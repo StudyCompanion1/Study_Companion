@@ -35,3 +35,7 @@ def stored_path(key: str) -> Path:
     if not path.is_relative_to(root) or not path.is_file():
         raise FileNotFoundError(key)
     return path
+
+# Remove all of guest's stored information after it expires
+def delete_user_files(user_id: uuid.UUID) -> None:
+    shutil.rmtree(LOCAL_UPLOAD_DIR / "users" / str(user_id), ignore_errors = True)

@@ -7,17 +7,20 @@ browser sends it with every later request automatically.
 from fastapi import APIRouter, HTTPException, Response, status
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
+import logging
 
 from app.auth.dependencies import CurrentUser
-from app.auth.schemas import LoginRequest, RegisterRequest, UserPublic
+from app.auth.schemas import LoginRequest, RegisterRequest, UserPublic, GuestUsage
 from app.auth.security import COOKIE_NAME, DUMMY_HASH, GUEST_TOKEN_EXPIRATION, create_access_token, hash_password, verify_password
-from app.auth.guests import delete_expired_guests
+from app.auth.guests import delete_expired_guests, count_collections_guest
 from app.config import settings
 from app.db import SessionDep
 from app.models import User, UserRole
 
 import secrets
 from uuid import uuid4
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -76,12 +79,31 @@ def me(user: CurrentUser) -> User:
     return user
 
 @router.post("/guest", response_model=UserPublic, status_code=status.HTTP_201_CREATED)
+# Creates a temporary guest user and logs them in. Guests have limited number of uses on uploads/AI chatting.
 def guest(session: SessionDep, response: Response) -> User:
-    delete_expired_guests(session)
-    # Creates a temporary guest user and logs them in. Guests are restricted from using certain features like AI
+    try:
+        delete_expired_guests(session)
+
+    except Exception: 
+        session.rollback()
+        logger.exception("Could not clean up expired guests.")
+
     user = User(name = "Guest", email = f"guest-{uuid4().hex}@guest.invalid",  password_hash = hash_password(secrets.token_urlsafe(32)), role = UserRole.GUEST)
     session.add(user)
     session.commit()
     session.refresh(user)
     set_login_cookie(response, user, GUEST_TOKEN_EXPIRATION)
     return user
+
+@router.get("/usage", response_model=GuestUsage)
+def usage(user: CurrentUser, session: SessionDep) -> GuestUsage:
+    # What is left of number of uses so that application can lock features.
+    if user.role != UserRole.GUEST:
+        return GuestUsage(is_guest=False)
+
+    return GuestUsage(
+        is_guest = True,
+        chats_remaining = max(0, settings.guest_max_chats - user.guest_chats_used),
+        uploads_remaining = max(0, settings.guest_max_uploads - user.guest_uploads_used),
+        collections_remaining = max(0, settings.guest_max_collections - count_collections_guest(session, user))
+    )

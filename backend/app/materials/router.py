@@ -30,6 +30,8 @@ from app.materials.schemas import MaterialPublic, file_type_for
 from app.materials.temp_file import save_to_temp
 from app.models import CourseMaterial
 from app.storage import object_key, upload_file
+from app.auth.guests import refund_guest_usage, usage_for_guest
+from app.config import settings
 
 router = APIRouter(prefix="/api/materials", tags=["materials"])
 
@@ -52,37 +54,47 @@ async def upload_material(
             detail="This file type isn't supported. Upload a PDF, Word, PowerPoint, text or image file.",
         )
 
+    # (Guests only get a few uploads and is counted before any action is performed, given back if a task fails.)
+    usage_for_guest(session, user, "guest_uploads_used", 1, settings.guest_max_uploads)
+
     # 2. Copy to a temp file (rejects empty or too-big files), then 3. keep it in storage
     file_type = file_type_for(extension)
     temp_path = None
+    saved = False
+
     try:
         temp_path = await save_to_temp(file, extension)
         key = object_key(user.id, filename)
         await run_in_threadpool(upload_file, temp_path, key)  # file I/O off the event loop
         page_count = await run_in_threadpool(count_pages, temp_path, file_type)
+
+        material = CourseMaterial(
+            user_id = user.id,
+            collection_id = collection.id if collection else None,
+            title = (Path(filename).stem or "untitled")[:200],
+            file_type = file_type,
+            file_path = key,
+            page_count = page_count,
+            position = _top_position(session, collection.id) if collection else 0,
+        )
+
+        session.add(material)
+
+        if collection:
+            collection.updated_at = datetime.now(UTC) # An upload counts as editing the collection
+            session.add(collection)
+        session.commit()
+        session.refresh(material)
+        saved = True
+        return material
+
     finally:
         await file.close()
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
 
-    # 4. Record it so it shows up in the app
-    material = CourseMaterial(
-        user_id=user.id,
-        collection_id=collection.id if collection else None,
-        title=(Path(filename).stem or "Untitled")[:200],  # "Week 1.pdf" → "Week 1"
-        file_type=file_type,
-        file_path=key,
-        page_count=page_count,
-        position=_top_position(session, collection.id) if collection else 0,
-    )
-    session.add(material)
-    if collection:
-        collection.updated_at = datetime.now(UTC)  # an upload counts as editing the collection
-        session.add(collection)
-    session.commit()
-    session.refresh(material)
-    return material
-
+        if not saved: # Rejected/Failed, don't take away an upload usage from guest
+            refund_guest_usage(session, user, "guest_uploads_used", 1)
 
 @router.get("", response_model=list[MaterialPublic])
 def list_materials(

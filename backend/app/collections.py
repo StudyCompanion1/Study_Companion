@@ -9,6 +9,7 @@ from sqlmodel import func, select
 from app.auth.dependencies import CurrentUser
 from app.db import SessionDep
 from app.models import Collection, CourseMaterial
+from app.auth.guests import check_count_collections_guest
 
 router = APIRouter(prefix="/api/collections", tags=["collections"])
 
@@ -41,6 +42,7 @@ class CollectionPublic(BaseModel):
 
 @router.post("", response_model=CollectionPublic, status_code=status.HTTP_201_CREATED)
 def create_collection(body: CollectionCreate, user: CurrentUser, session: SessionDep) -> Collection:
+    check_count_collections_guest(session, user) 
     collection = Collection(user_id=user.id, name=body.name, code=body.code or None, term=body.term or None)
     session.add(collection)
     session.commit()
