@@ -1,11 +1,12 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { continueAsGuest, login, register, type User } from '../auth/api.ts'
-import { ThemeSwitcher } from '../components/ThemeSwitcher.tsx'
 import { Icon, type IconName } from '../components/Icon.tsx'
 import { PageHeader } from '../components/PageHeader.tsx'
 import { TextField } from '../components/TextField.tsx'
 import { Button } from '../components/Button.tsx'
 import { Notice } from '../components/Notice.tsx'
+import SettingsPanel from '../components/SettingsPanel.tsx'
+import { defaultSettings } from '../components/Settings.ts'
 import './AuthForm.css'
 
 type Mode = 'login' | 'register'
@@ -52,6 +53,52 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [settings, setSettings] = useState(defaultSettings)
+  const [accessibilityOpen, setAccessibilityOpen] = useState(false)
+
+
+/* ADDED CLICK & DRAG FOR HOME PAGE */
+const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+const dragStartRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null)
+
+function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+  const target = event.target as HTMLElement
+  if (target.closest('button, input, [role="slider"]')) return
+  if (!target.closest('.sc-settings__header')) return
+
+  event.currentTarget.setPointerCapture(event.pointerId)
+  dragStartRef.current = {
+    startX: event.clientX,
+    startY: event.clientY,
+    originX: dragOffset.x,
+    originY: dragOffset.y,
+  }
+}
+
+function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+  if (!dragStartRef.current) return
+  setDragOffset({
+    x: dragStartRef.current.originX + (event.clientX - dragStartRef.current.startX),
+    y: dragStartRef.current.originY + (event.clientY - dragStartRef.current.startY),
+  })
+}
+
+function handlePointerUp(event: React.PointerEvent<HTMLDivElement>) {
+  if (!dragStartRef.current) return
+  dragStartRef.current = null
+  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }
+}
+
+  useEffect(() => {
+    const previousFontSize = document.documentElement.style.fontSize
+    document.documentElement.style.fontSize = `${16 * settings.textScale}px`
+
+    return () => {
+      document.documentElement.style.fontSize = previousFontSize
+    }
+  }, [settings.textScale])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -156,8 +203,46 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
 
       <main className="auth-form-section">
         <div className="auth-accessibility">
-          <ThemeSwitcher />
+          <button
+            type="button"
+            className="button button--secondary button--md auth-accessibility__button"
+            aria-label="Accessibility"
+            aria-expanded={accessibilityOpen}
+            aria-controls="auth-accessibility-panel"
+            onClick={() => setAccessibilityOpen(open => !open)}
+          >
+            <Icon name="accessibility" size={24} />
+          </button>
         </div>
+      
+
+{accessibilityOpen && (
+          <div
+            style={
+              {
+                '--auth-drag-x': `${dragOffset.x}px`,
+                '--auth-drag-y': `${dragOffset.y}px`,
+              } as React.CSSProperties
+            }
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          >
+            <SettingsPanel
+              id="auth-accessibility-panel"
+              panel="accessibility"
+              placement="auth"
+              value={settings}
+              onChange={setSettings}
+              onClose={() => {
+                setAccessibilityOpen(false)
+                setDragOffset({ x: 0, y: 0 })
+              }}
+            />
+          </div>
+        )}
+
 
         <div className="auth-form-wrapper">
           <PageHeader

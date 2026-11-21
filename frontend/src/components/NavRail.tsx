@@ -10,12 +10,12 @@ const ITEMS: { label: string; icon: IconName; href: string }[] = [
   { label: 'Home', href: '/', icon: 'home' },
   { label: 'Collections', href: '/collections', icon: 'collections' },
   { label: 'Practice', href: '#', icon: 'target' },
-  { label: 'Search', href: '#', icon: 'search' },
+  { label: 'Search', href: '/search', icon: 'search' },
   { label: 'Groups', href: '#', icon: 'groups' },
 ]
 
 export function NavRail({ active = 'Home' }: { active?: string }) {
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [openPanel, setOpenPanel] = useState<'settings' | 'accessibility' | null>(null)
   const [settings, setSettings] = useState(defaultSettings)
 
   useEffect(() => {
@@ -64,26 +64,40 @@ export function NavRail({ active = 'Home' }: { active?: string }) {
         </button>
       </div>
       <div className="nav-rail__spacer" />
-            <a
-        href="#"
+      <button
+        type="button"
+        className="nav-rail__item"
+        data-nav="accessibility"
+        aria-expanded={openPanel === 'accessibility'}
+        aria-controls="accessibility-panel"
+        onClick={() => setOpenPanel(open => open === 'accessibility' ? null : 'accessibility')}
+      >
+        <span className="nav-rail__icon-pill">
+          <Icon name="accessibility" size={24} />
+        </span>
+        <span className="nav-rail__label">Accessibility</span>
+      </button>
+      <button
+        type="button"
         className="nav-rail__item"
         data-nav="settings"
-        onClick={(e) => {
-          e.preventDefault()
-          setSettingsOpen(open => !open)
-        }}
+        aria-expanded={openPanel === 'settings'}
+        aria-controls="settings-panel"
+        onClick={() => setOpenPanel(open => open === 'settings' ? null : 'settings')}
       >
         <span className="nav-rail__icon-pill">
           <Icon name="settings" size={24} />
         </span>
         <span className="nav-rail__label">Settings</span>
-      </a>
+      </button>
 
-      {settingsOpen && (
+      {openPanel && (
         <SettingsPanel
+          id={openPanel === 'accessibility' ? 'accessibility-panel' : 'settings-panel'}
+          panel={openPanel}
           value={settings}
           onChange={setSettings}
-          onClose={() => setSettingsOpen(false)}
+          onClose={() => setOpenPanel(null)}
         />
       )}
     </nav>

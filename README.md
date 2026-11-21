@@ -164,6 +164,27 @@ Both endpoints return:
 
 ### QA Testing
 
+Automated tests run from the project root:
+
+```powershell
+npm run test:backend
+npm run test:frontend
+npx playwright install chromium
+npm run test:e2e
+```
+
+Run `uv sync --project backend` after updating Python test dependencies. Backend
+coverage includes the app, AI processing, and the standalone S3 upload helper.
+AI and AWS unit tests mock provider calls and do not need API keys or credentials.
+Document extraction tests read real fixture files generated in temporary folders.
+The two existing model validation tests marked `xfail` remain known limitations.
+
+Browser tests start separate servers on ports 5180 and 8100, use `e2e-test.db`,
+and keep uploaded files in a temporary directory. Chat browser tests mock the AI
+endpoint; material workflows use the real test backend. To use an installed Chrome
+instead of downloading Chromium, set `$env:PLAYWRIGHT_CHROMIUM_CHANNEL = 'chrome'`
+before running `npm run test:e2e` in PowerShell.
+
 From the project root, start the backend:
 
 ```bash

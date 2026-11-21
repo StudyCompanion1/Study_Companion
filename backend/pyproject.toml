@@ -26,6 +26,7 @@ package = false
 
 [dependency-groups]
 dev = [
+    "boto3>=1.44.7",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
 ]
@@ -33,4 +34,4 @@ dev = [
 [tool.pytest.ini_options]
 # Lets tests `import app` when run from backend/
 pythonpath = ["."]
-addopts = "--cov=app --cov-fail-under=80"
+addopts = "--cov=app --cov=ai_processing --cov=upload --cov-fail-under=80"

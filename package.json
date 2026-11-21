@@ -16,6 +16,8 @@
     "test:backend:coverage": "cd backend && uv run pytest --cov-report=term-missing",
     "test:frontend": "npm run test -w frontend",
     "test:frontend:coverage": "npm run test -w frontend -- --coverage.reporter=text --coverage.reporter=html",
+    "test:e2e": "npm run test:e2e -w frontend",
+    "test:e2e:ui": "npm run test:e2e:ui -w frontend",
     "test": "concurrently -n api,web -c blue,green \"npm:test:backend\" \"npm:test:frontend\"",
     "test:coverage": "concurrently -n api,web -c blue,green \"npm:test:backend:coverage\" \"npm:test:frontend:coverage\""
   },
