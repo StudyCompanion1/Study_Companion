@@ -56,6 +56,41 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
   const [settings, setSettings] = useState(defaultSettings)
   const [accessibilityOpen, setAccessibilityOpen] = useState(false)
 
+
+/* ADDED CLICK & DRAG FOR HOME PAGE */
+const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+const dragStartRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null)
+
+function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+  const target = event.target as HTMLElement
+  if (target.closest('button, input, [role="slider"]')) return
+  if (!target.closest('.sc-settings__header')) return
+
+  event.currentTarget.setPointerCapture(event.pointerId)
+  dragStartRef.current = {
+    startX: event.clientX,
+    startY: event.clientY,
+    originX: dragOffset.x,
+    originY: dragOffset.y,
+  }
+}
+
+function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+  if (!dragStartRef.current) return
+  setDragOffset({
+    x: dragStartRef.current.originX + (event.clientX - dragStartRef.current.startX),
+    y: dragStartRef.current.originY + (event.clientY - dragStartRef.current.startY),
+  })
+}
+
+function handlePointerUp(event: React.PointerEvent<HTMLDivElement>) {
+  if (!dragStartRef.current) return
+  dragStartRef.current = null
+  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }
+}
+
   useEffect(() => {
     const previousFontSize = document.documentElement.style.fontSize
     document.documentElement.style.fontSize = `${16 * settings.textScale}px`
@@ -179,16 +214,35 @@ export default function AuthForm({ mode = 'login', onLoggedIn }: AuthFormProps) 
             <Icon name="accessibility" size={24} />
           </button>
         </div>
-        {accessibilityOpen && (
-          <SettingsPanel
-            id="auth-accessibility-panel"
-            panel="accessibility"
-            placement="auth"
-            value={settings}
-            onChange={setSettings}
-            onClose={() => setAccessibilityOpen(false)}
-          />
+      
+
+{accessibilityOpen && (
+          <div
+            style={
+              {
+                '--auth-drag-x': `${dragOffset.x}px`,
+                '--auth-drag-y': `${dragOffset.y}px`,
+              } as React.CSSProperties
+            }
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          >
+            <SettingsPanel
+              id="auth-accessibility-panel"
+              panel="accessibility"
+              placement="auth"
+              value={settings}
+              onChange={setSettings}
+              onClose={() => {
+                setAccessibilityOpen(false)
+                setDragOffset({ x: 0, y: 0 })
+              }}
+            />
+          </div>
         )}
+
 
         <div className="auth-form-wrapper">
           <PageHeader
