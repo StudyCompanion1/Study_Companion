@@ -106,9 +106,12 @@ function ChooseForm({ fileName, onChoose, onClose, saving, setSaving }: {
     try {
       await onChoose(destination)
     } catch (error) {
-      setFormError(error instanceof ApiError && error.status === 401
-        ? 'Your session expired. Refresh the page and log in again.'
-        : 'Couldn’t create the collection. Please try again.')
+      setFormError(
+        error instanceof ApiError && error.status === 401
+          ? 'Your session expired. Refresh the page and log in again.'
+          : error instanceof ApiError && error.status === 403
+            ? error.message // Ex: Guest Collection Limit.
+            : 'Couldn’t create the collection. Please try again.')
     } finally {
       setSaving(false)
     }

@@ -29,3 +29,7 @@ class User(SQLModel, table=True):
     password_hash: str
     role: UserRole = UserRole.STUDENT
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), sa_type=DateTime(timezone=True))
+
+    # For Guest Accounts: Amount of times guest has used a certain feature. Registered accounts have this value at 0.
+    guest_chats_used: int = Field(default = 0)
+    guest_uploads_used: int = Field(default = 0)

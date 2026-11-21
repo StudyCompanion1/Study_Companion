@@ -1,4 +1,4 @@
-import { ApiError } from '../auth/api'
+import { ApiError, errorMessage } from '../auth/api'
 import type { Collection, NewCollection } from './types'
 
 interface CollectionResponse {
@@ -16,7 +16,12 @@ function toCollection({ updated_at, note_count, ...collection }: CollectionRespo
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api/collections${path}`, { cache: 'no-store', ...init })
-  if (!response.ok) throw new ApiError(response.status, 'The collections request failed.')
+  if (!response.ok) {
+    // For Guests: A guest at their collection limit gets a 403
+    const message = 
+      response.status === 403 ? errorMessage(await response.json().catch(() => null)) : 'The collections request failed.' 
+    throw new ApiError(response.status, 'The collections request failed.')
+  }  
   return response.json() as Promise<T>
 }
 

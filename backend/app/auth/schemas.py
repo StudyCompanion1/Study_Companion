@@ -40,3 +40,10 @@ class UserPublic(BaseModel):
     def assume_utc(cls, value: datetime) -> datetime:
         # SQLite drops the timezone on read; times are always stored in UTC
         return value if value.tzinfo else value.replace(tzinfo=UTC)
+
+class GuestUsage(BaseModel):
+    # What's left of the guest's free uses. This count is None if the user is registered.
+    is_guest: bool
+    chats_remaining: int | None = None
+    uploads_remaining: int | None = None
+    collections_remaining: int | None = None

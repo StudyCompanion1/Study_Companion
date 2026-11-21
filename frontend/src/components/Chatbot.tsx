@@ -5,6 +5,8 @@ import {
   type FormEvent,
   type PointerEvent,
 } from 'react'
+import { useSession } from '../auth/SessionContext'
+import { GuestLimitNotice } from './GuestLimitNotice'
 import './Chatbot.css'
 
 // Types
@@ -103,7 +105,18 @@ function constrainSize(size: ChatSize): ChatSize {
 }
 
 export default function Chatbot() {
-  // Open and close
+
+  const {isGuest, usage, refreshUsage, goToSignUp} = useSession()
+  const [guestLocked, setGuestLocked] = useState(false)
+
+  // Locked once the free questions are used up (also covers page refresh)
+  const locked = isGuest && (guestLocked || usage?.chats_remaining === 0)
+
+  // For Guests: Can attach one file per message (server enforces this too).
+  const maxFiles = isGuest ? 1 : MAX_FILES
+
+
+ // open and close 
 
   const [isOpen, setIsOpen] = useState(false)
 
@@ -265,9 +278,11 @@ export default function Chatbot() {
       }
     }
 
-    if (combined.length > MAX_FILES) {
-      nextError = `Attach no more than ${MAX_FILES} files at once.`
-      combined.length = MAX_FILES
+    if (combined.length > maxFiles) {
+      nextError = isGuest
+        ? 'You can only attach one file per message.'
+        : `Attach no more than ${MAX_FILES} files at once.`
+      combined.length = maxFiles
     }
 
     const totalSize = combined.reduce(
@@ -347,6 +362,13 @@ export default function Chatbot() {
 
       const data = (await response.json()) as ChatResponse
 
+      if (response.status === 403 && isGuest) {
+        setGuestLocked(true)
+        setMessages(messages) // The question wasn't answered, so take it back out of the chat.
+        void refreshUsage()
+        return
+      }
+      
       if (!response.ok) {
         throw new Error(
           data.detail ||
@@ -376,6 +398,8 @@ export default function Chatbot() {
             : [],
         },
       ])
+      void refreshUsage()
+
     } catch (err) {
       setError(
         err instanceof Error
@@ -385,6 +409,7 @@ export default function Chatbot() {
     } finally {
       setIsSending(false)
     }
+    
   }
 
   // Download the current conversation
@@ -519,7 +544,7 @@ export default function Chatbot() {
                 type="button"
                 className="study-chat__secondary-button"
                 onClick={startNewChat}
-                disabled={isSending}
+                disabled={isSending || locked}
               >
                 New chat
               </button>
@@ -569,21 +594,17 @@ export default function Chatbot() {
                       </span>
 
                       <div className="study-chat__suggestions-list">
-                        {message.suggestions.map(
-                          (suggestion, suggestionIndex) => (
-                            <button
-                              key={`${suggestionIndex}-${suggestion}`}
-                              type="button"
-                              className="study-chat__secondary-button study-chat__suggestion-button"
-                              onClick={() =>
-                                sendMessage(undefined, suggestion)
-                              }
-                              disabled={isSending}
-                            >
-                              {suggestion}
-                            </button>
-                          ),
-                        )}
+                        {message.suggestions.map((suggestion, suggestionIndex) => (
+                          <button
+                            key={`${suggestionIndex}-${suggestion}`}
+                            type="button"
+                            className="study-chat__secondary-button study-chat__suggestion-button"
+                            onClick={() => sendMessage(undefined, suggestion)}
+                            disabled={isSending || locked}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -621,7 +642,7 @@ export default function Chatbot() {
                     <button
                       type="button"
                       onClick={() => removeFile(index)}
-                      disabled={isSending}
+                      disabled={isSending || locked}
                       aria-label={`Remove ${file.name}`}
                     >
                       Remove
@@ -632,6 +653,23 @@ export default function Chatbot() {
             </div>
           )}
 
+          {/* Guest Counter */}
+          {isGuest && usage && !locked && (
+            <p className = "study-chat__hint">
+              Guest mode: {usage.chats_remaining ?? 0} free{' '}
+              {usage.chats_remaining === 1 ? 'question' : 'questions'} left.
+            </p>
+          )}
+
+          {/* Opens the either-or. When locked, show the sign-up notice instead of the form */}
+          {locked ? (
+            <GuestLimitNotice
+            message="You've used your free guest questions. Create a free account to keep chatting."
+            onSignUp={goToSignUp}
+          />
+            ) : (
+
+          /* Message Input */
           <form
             className="study-chat__form"
             onSubmit={sendMessage}
@@ -650,7 +688,7 @@ export default function Chatbot() {
               placeholder="Ask a question or request an explanation…"
               rows={3}
               maxLength={4000}
-              disabled={isSending}
+              disabled={isSending || locked}
             />
 
             <div className="study-chat__actions">
@@ -660,13 +698,13 @@ export default function Chatbot() {
                   id="study-chat-files"
                   className="study-chat__file-input"
                   type="file"
-                  multiple
+                  multiple={!isGuest}
                   accept=".pdf,.docx,.pptx,.txt,.jpg,.jpeg,.png,.webp,.heic,.heif,.bmp,.gif,.tif,.tiff,.ico,.svg,.psd,.raw,.dng,.cr2,.nef,.arw"
-                  onChange={(event) =>
+                  onChange={(event) => 
                     addFiles(event.target.files)
                   }
                   disabled={
-                    isSending || files.length >= MAX_FILES
+                    isSending || files.length >= maxFiles
                   }
                 />
 
@@ -704,6 +742,7 @@ export default function Chatbot() {
               </p>
             )}
           </form>
+          )} 
         </section>
       </div>
     </div>

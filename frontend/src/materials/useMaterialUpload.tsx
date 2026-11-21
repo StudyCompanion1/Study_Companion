@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { ApiError } from '../auth/api'
+import { useSession } from '../auth/SessionContext'
 import { createCollection } from '../collections/api'
 import { collectionHref } from '../collections/routes'
+import { GuestLimitNotice } from '../components/GuestLimitNotice'
 import { Notice } from '../components/Notice'
 import { ACCEPT_ATTRIBUTE, checkFile, uploadMaterial, type Material } from './api'
 import { ChooseCollectionDialog, type Destination } from './ChooseCollectionDialog'
@@ -10,6 +13,8 @@ type UploadState =
   | { status: 'uploading'; fileName: string }
   | { status: 'done'; fileName: string; collection?: { id: string; name: string } }
   | { status: 'error'; message: string }
+
+const GUEST_UPLOADS_USED_UP = 'You`ve used your free guest uploads. Create a free account to upload more files.'
 
 /* F1 Upload material. Gives a page everything its "Upload material" button needs:
      const upload = useMaterialUpload({ collectionId })
@@ -25,9 +30,12 @@ export function useMaterialUpload({
 }: { collectionId?: string; onUploaded?: (material: Material) => void } = {}) {
   const inputRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const {isGuest, usage, refreshUsage, goToSignUp} = useSession()
   const [state, setState] = useState<UploadState>({ status: 'idle' })
   const [waiting, setWaiting] = useState<File | null>(null) // picked on Home, waiting for a collection
+  const [limitMessage, setLimitMessage] = useState('') // For Guests: Sets when a guest has used up their upload usage.
   const busy = state.status === 'uploading'
+  const outOfUploads = isGuest && usage?.uploads_remaining == 0
 
   useEffect(() => {
     if (waiting && !dialogRef.current?.open) dialogRef.current?.showModal()
@@ -40,9 +48,24 @@ export function useMaterialUpload({
       setState({ status: 'done', fileName: file.name, collection })
       onUploaded?.(material)
     } catch (err) {
+      if (isGuest && err instanceof ApiError && err.status === 403) {
+        setState({status: 'idle'})
+        setLimitMessage(err.message)
+        void refreshUsage()
+        return
+      }
       const message = err instanceof Error && err.message ? err.message : 'Something went wrong. Please try again.'
       setState({ status: 'error', message })
     }
+  }
+
+  function open() {
+    if (outOfUploads) {
+      setLimitMessage(GUEST_UPLOADS_USED_UP)
+      return
+    }
+    setLimitMessage('')
+    inputRef.current?.click()
   }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
@@ -109,11 +132,12 @@ export function useMaterialUpload({
           {state.message}
         </Notice>
       )}
+      {limitMessage && <GuestLimitNotice message = {limitMessage} onSignUp = {goToSignUp} />}
     </>
   )
 
   return {
-    open: () => inputRef.current?.click(),
+    open,
     busy,
     label: busy ? 'Uploading…' : 'Upload material',
     element,

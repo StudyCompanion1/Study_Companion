@@ -19,6 +19,8 @@ from datetime import UTC, datetime
 from sqlmodel import select
 
 from app.db import SessionDep
+from app.auth.guests import is_guest, refund_guest_usage, usage_for_guest
+from app.config import settings
 from app.models.chatbot_preferences import ChatbotPreferences
 
 from ai_processing.keyword_concept_extraction import (
@@ -416,6 +418,17 @@ async def chat(
 
         file_contents.append((upload.filename, content))
 
+    # For Guests: one file per message and 2 questions in total.
+    if is_guest(user) and len(file_contents) > settings.guest_max_files_per_message:
+        limit = settings.guest_max_files_per_message
+        raise HTTPException(
+            status_code=400,
+            detail=f"Guest can attach {limit} {'file' if limit == 1 else 'files'} per message. Create a free account to attach more files."
+        )
+
+    usage_for_guest(session, user, "guest_chats_used", 1, settings.guest_max_chats)
+    succeeded = False
+
     # This try block must be OUTSIDE the for loop.
     try:
         study_materials = _extract_uploaded_materials(file_contents)
@@ -455,6 +468,8 @@ async def chat(
                 detail="The AI assistant returned an empty response. Please try again.",
             )
 
+        succeeded = True
+
         return ChatResponse(
             reply=reply,
             suggestions=suggestions,
@@ -479,3 +494,7 @@ async def chat(
             status_code=502,
             detail="The AI assistant could not process this request. Please try again.",
         ) from exc
+
+    finally:
+        if not succeeded: # The AI call failed, so don't charge a usage from guest amount.
+            refund_guest_usage(session, user, "guest_chats_used", 1)
