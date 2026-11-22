@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     guest_max_files_per_message: int = 1
     guest_max_collections: int = 4
 
+    # S3 bucket uploaded course material is stored in (see app/storage.py). Empty = keep files on disk under backend/uploads/ (local dev, tests).
+    s3_bucket: str = ""
+    aws_region: str = "us-east-1"
+
 
 settings = Settings()
 
