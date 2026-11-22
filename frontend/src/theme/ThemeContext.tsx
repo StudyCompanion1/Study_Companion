@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const THEMES = ['light', 'dark', 'high-contrast'] as const
+export const THEMES = ['light', 'dark', 'high-contrast', 'color-blind'] as const
 export type Theme = (typeof THEMES)[number]
 
 const STORAGE_KEY = 'theme'

@@ -9,6 +9,11 @@ from app.auth.router import router as auth_router
 from app.db import create_db_and_tables
 from app.chatbot import router as chatbot_router
 from app.collections import router as collections_router
+from app.materials.router import router as materials_router
+from app.materials.notes import router as notes_router
+from app.materials.order import router as material_order_router
+from app.materials.viewer import router as material_viewer_router
+from app.auth.dependencies import RegisteredUser
 import pymupdf
 from fastapi import FastAPI, File, HTTPException, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,6 +36,10 @@ app = FastAPI(title="Study Companion API", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(chatbot_router)
 app.include_router(collections_router)
+app.include_router(materials_router)
+app.include_router(material_order_router)
+app.include_router(material_viewer_router)
+app.include_router(notes_router)
 
 # react / vite frontend
 app.add_middleware(
@@ -125,7 +134,7 @@ async def _process_upload(file: UploadFile, task: str):
 
 # api #1 - concepts and keywords
 @app.post("/api/analyze")
-async def analyze(file: UploadFile = File(...)):
+async def analyze(user: RegisteredUser, file: UploadFile = File(...)):
 
     return await _process_upload(
         file,
@@ -135,7 +144,7 @@ async def analyze(file: UploadFile = File(...)):
 
 # api #2 - study guide
 @app.post("/api/study-guide")
-async def study_guide(file: UploadFile = File(...)):
+async def study_guide(user: RegisteredUser, file: UploadFile = File(...)):
 
     return await _process_upload(
         file,
@@ -145,6 +154,7 @@ async def study_guide(file: UploadFile = File(...)):
 # api #3 - url-resources
 @app.post("/api/url-resources")
 async def url_resources(
+    user: RegisteredUser,
     query: str = Query(..., min_length=1)
 ):
     result = await run_in_threadpool(

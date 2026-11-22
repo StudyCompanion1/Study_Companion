@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     # True once the site is served over HTTPS (staging/production); must be False for http://localhost
     cookie_secure: bool = False
 
+    # For Guest Accounts: Sets limits on certain features on what guest can do before being prompted to create an account.
+    guest_max_chats: int = 2
+    guest_max_uploads: int = 3
+    guest_max_files_per_message: int = 1
+    guest_max_collections: int = 4
+
 
 settings = Settings()
 

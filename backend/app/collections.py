@@ -4,11 +4,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, ConfigDict, StringConstraints, field_validator
-from sqlmodel import select
+from sqlmodel import func, select
 
 from app.auth.dependencies import CurrentUser
 from app.db import SessionDep
-from app.models import Collection
+from app.models import Collection, CourseMaterial
+from app.auth.guests import check_count_collections_guest
 
 router = APIRouter(prefix="/api/collections", tags=["collections"])
 
@@ -29,6 +30,7 @@ class CollectionPublic(BaseModel):
     code: str | None
     term: str | None
     updated_at: datetime
+    # How many files (notes) are in it
     note_count: int = 0
 
     @field_validator("updated_at")
@@ -40,6 +42,7 @@ class CollectionPublic(BaseModel):
 
 @router.post("", response_model=CollectionPublic, status_code=status.HTTP_201_CREATED)
 def create_collection(body: CollectionCreate, user: CurrentUser, session: SessionDep) -> Collection:
+    check_count_collections_guest(session, user) 
     collection = Collection(user_id=user.id, name=body.name, code=body.code or None, term=body.term or None)
     session.add(collection)
     session.commit()
@@ -48,15 +51,29 @@ def create_collection(body: CollectionCreate, user: CurrentUser, session: Sessio
 
 
 @router.get("", response_model=list[CollectionPublic])
-def list_collections(user: CurrentUser, session: SessionDep) -> list[Collection]:
+def list_collections(user: CurrentUser, session: SessionDep) -> list[CollectionPublic]:
     query = select(Collection).where(Collection.user_id == user.id).order_by(Collection.updated_at.desc())
-    return list(session.exec(query).all())
+    return _with_counts(session, list(session.exec(query).all()))
 
 
 @router.get("/{collection_id:uuid}", response_model=CollectionPublic)
-def get_collection(collection_id: uuid.UUID, user: CurrentUser, session: SessionDep) -> Collection:
+def get_collection(collection_id: uuid.UUID, user: CurrentUser, session: SessionDep) -> CollectionPublic:
     query = select(Collection).where(Collection.id == collection_id, Collection.user_id == user.id)
     collection = session.exec(query).one_or_none()
     if collection is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Collection not found.")
-    return collection
+    return _with_counts(session, [collection])[0]
+
+
+def _with_counts(session: SessionDep, collections: list[Collection]) -> list[CollectionPublic]:
+    """Adds note_count (files in each collection) with one query for the whole list."""
+    query = (
+        select(CourseMaterial.collection_id, func.count())
+        .where(CourseMaterial.collection_id.in_([c.id for c in collections]))
+        .group_by(CourseMaterial.collection_id)
+    )
+    counts = dict(session.exec(query).all())
+    return [
+        CollectionPublic.model_validate(c).model_copy(update={"note_count": counts.get(c.id, 0)})
+        for c in collections
+    ]

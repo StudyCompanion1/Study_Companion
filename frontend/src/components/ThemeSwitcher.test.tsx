@@ -12,7 +12,7 @@ describe('ThemeSwitcher', () => {
     )
 
     const radios = screen.getAllByRole('radio')
-    expect(radios).toHaveLength(3)
+    expect(radios).toHaveLength(4)
     expect(radios.filter((r) => r.getAttribute('aria-checked') === 'true')).toHaveLength(1)
   })
 
@@ -23,8 +23,8 @@ describe('ThemeSwitcher', () => {
       </ThemeProvider>,
     )
 
-    fireEvent.click(screen.getByRole('radio', { name: 'High contrast theme' }))
+    fireEvent.click(screen.getByRole('radio', { name: 'High Contrast theme' }))
 
-    expect(screen.getByRole('radio', { name: 'High contrast theme' })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByRole('radio', { name: 'High Contrast theme' })).toHaveAttribute('aria-checked', 'true')
   })
 })

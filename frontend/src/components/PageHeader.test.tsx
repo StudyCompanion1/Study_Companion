@@ -18,4 +18,16 @@ describe('PageHeader', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Upload material' }))
     expect(onAction).toHaveBeenCalledTimes(1)
   })
+
+  test('disables the action button while it is busy', () => {
+    const onAction = vi.fn()
+    render(
+      <PageHeader title="Home" summary="Welcome back." actionLabel="Uploading…" onAction={onAction} actionDisabled />,
+    )
+
+    const button = screen.getByRole('button', { name: 'Uploading…' })
+    expect(button).toBeDisabled()
+    fireEvent.click(button)
+    expect(onAction).not.toHaveBeenCalled()
+  })
 })

@@ -73,3 +73,15 @@ export function logout(): Promise<void> {
 export function continueAsGuest(): Promise<User> {
   return request ('/guest', {method: 'POST'})
 }
+
+export type GuestUsage = {
+  is_guest: boolean
+  chats_remaining: number | null
+  uploads_remaining: number | null
+  collections_remaining: number | null
+}
+
+// Usages left from guest account (null for registered account).
+export function getUsage(): Promise<GuestUsage> {
+  return request('/usage')
+}
