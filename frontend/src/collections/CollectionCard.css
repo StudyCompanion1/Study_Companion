@@ -32,6 +32,11 @@
   padding: var(--space-3) var(--space-4);
 }
 
+.collection-card__band:empty {
+  min-height: var(--space-2);
+  padding: 0;
+}
+
 .collection-card__band--green { background: var(--hl-green); }
 .collection-card__band--blue { background: var(--hl-blue); }
 .collection-card__band--yellow { background: var(--hl-yellow); }
@@ -53,6 +58,12 @@
   flex-direction: column;
   gap: 0.125rem; /* 2px */
   padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.collection-card__code,
+.collection-card__name,
+.collection-card__meta {
+  overflow-wrap: anywhere;
 }
 
 .collection-card__name {

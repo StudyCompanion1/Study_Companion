@@ -5,39 +5,27 @@ from pathlib import Path
 from zipfile import BadZipFile
 from contextlib import asynccontextmanager
 
-from app.auth.dependencies import CurrentUser
 from app.auth.router import router as auth_router
-from app.db import SessionDep, create_db_and_tables
-from app.models import CourseMaterial, FileType
-from app.storage import object_key, upload_file
+from app.db import create_db_and_tables
+from app.chatbot import router as chatbot_router
+from app.collections import router as collections_router
+from app.materials.router import router as materials_router
+from app.materials.notes import router as notes_router
+from app.materials.order import router as material_order_router
+from app.materials.viewer import router as material_viewer_router
+from app.auth.dependencies import RegisteredUser
 import pymupdf
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import UnidentifiedImageError
 from starlette.concurrency import run_in_threadpool
 
 from ai_processing.keyword_concept_extraction import (
-    DOCUMENT_EXTENSIONS,
     SUPPORTED_EXTENSIONS,
     analyze_pdf,
     generate_study_guide,
 )
-
-
-def _file_type_for(extension: str) -> FileType:
-    """CourseMaterial.file_type for an upload extension already checked against SUPPORTED_EXTENSIONS."""
-    if extension == ".pdf":
-        return FileType.PDF
-    if extension == ".pptx":
-        return FileType.PPT
-    if extension == ".docx":
-        return FileType.DOCX
-    if extension == ".txt":
-        return FileType.TXT
-    if extension in DOCUMENT_EXTENSIONS:  # pragma: no cover - DOCUMENT_EXTENSIONS is exactly the 4 above today
-        raise AssertionError(f"unmapped document extension: {extension}")
-    return FileType.IMAGE
-
+from ai_processing.brave_search import ground_brave_search
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
@@ -46,6 +34,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Study Companion API", lifespan=lifespan)
 app.include_router(auth_router)
+app.include_router(chatbot_router)
+app.include_router(collections_router)
+app.include_router(materials_router)
+app.include_router(material_order_router)
+app.include_router(material_viewer_router)
+app.include_router(notes_router)
 
 # react / vite frontend
 app.add_middleware(
@@ -54,6 +48,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173"
     ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -68,7 +63,7 @@ def health():
 
 
 # shared file upload processing
-async def _process_upload(file: UploadFile, task: str, user: CurrentUser, session: SessionDep):
+async def _process_upload(file: UploadFile, task: str):
 
     extension = Path(file.filename or "").suffix.lower()
 
@@ -115,17 +110,6 @@ async def _process_upload(file: UploadFile, task: str, user: CurrentUser, sessio
             temp_path
         )
 
-        # keep the file so it shows up in the user's collections (CourseMaterial)
-        key = object_key(user.id, file.filename or "")
-        await run_in_threadpool(upload_file, temp_path, key)
-        session.add(CourseMaterial(
-            user_id=user.id,
-            title=Path(file.filename or "untitled").stem,
-            file_type=_file_type_for(extension),
-            file_path=key,
-        ))
-        session.commit()
-
         return {"result": result}
 
     except (
@@ -150,23 +134,31 @@ async def _process_upload(file: UploadFile, task: str, user: CurrentUser, sessio
 
 # api #1 - concepts and keywords
 @app.post("/api/analyze")
-async def analyze(user: CurrentUser, session: SessionDep, file: UploadFile = File(...)):
+async def analyze(user: RegisteredUser, file: UploadFile = File(...)):
 
     return await _process_upload(
         file,
-        "summary",
-        user,
-        session
+        "summary"
     )
 
 
 # api #2 - study guide
 @app.post("/api/study-guide")
-async def study_guide(user: CurrentUser, session: SessionDep, file: UploadFile = File(...)):
+async def study_guide(user: RegisteredUser, file: UploadFile = File(...)):
 
     return await _process_upload(
         file,
-        "guide",
-        user,
-        session
+        "guide"
     )
+
+# api #3 - url-resources
+@app.post("/api/url-resources")
+async def url_resources(
+    user: RegisteredUser,
+    query: str = Query(..., min_length=1)
+):
+    result = await run_in_threadpool(
+        ground_brave_search,
+        query
+    )
+    return result

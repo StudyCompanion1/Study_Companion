@@ -8,6 +8,12 @@ __pycache__/
 node_modules/
 frontend/coverage/
 
+# Playwright (E2E) output
+frontend/playwright-report/
+frontend/test-results/
+frontend/blob-report/
+frontend/playwright/.cache/
+
 # Env
 .env
 
@@ -15,4 +21,7 @@ frontend/coverage/
 *.db
 
 # test data
-test_data/.claude/worktrees/
+test_data/
+# Uploaded course material (backend/app/storage.py)
+backend/uploads/
+.claude/worktrees/

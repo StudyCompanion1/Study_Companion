@@ -1,16 +1,21 @@
-import { Icon } from './Icon'
+import { Icon, type IconName } from './Icon'
 import './PageHeader.css'
 
 export function PageHeader({
   title,
   summary,
   actionLabel,
+  actionIcon = 'upload',
   onAction,
+  actionDisabled = false,
 }: {
   title: string
   summary: string
   actionLabel?: string
+  actionIcon?: IconName
   onAction?: () => void
+  /** True while the action is running (e.g. an upload in progress), so it can't be clicked twice. */
+  actionDisabled?: boolean
 }) {
   return (
     <div className="page-header">
@@ -19,8 +24,8 @@ export function PageHeader({
         <p className="page-header__summary">{summary}</p>
       </div>
       {actionLabel && (
-        <button type="button" className="page-header__action" onClick={onAction}>
-          <Icon name="upload" size={20} />
+        <button type="button" className="page-header__action" onClick={onAction} disabled={actionDisabled}>
+          <Icon name={actionIcon} size={20} />
           {actionLabel}
         </button>
       )}

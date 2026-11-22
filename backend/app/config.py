@@ -23,7 +23,13 @@ class Settings(BaseSettings):
     # True once the site is served over HTTPS (staging/production); must be False for http://localhost
     cookie_secure: bool = False
 
-    # S3 bucket uploaded course material is stored in (see app/storage.py). Empty until TI-2 is done.
+    # For Guest Accounts: Sets limits on certain features on what guest can do before being prompted to create an account.
+    guest_max_chats: int = 2
+    guest_max_uploads: int = 3
+    guest_max_files_per_message: int = 1
+    guest_max_collections: int = 4
+
+    # S3 bucket uploaded course material is stored in (see app/storage.py). Empty = keep files on disk under backend/uploads/ (local dev, tests).
     s3_bucket: str = ""
     aws_region: str = "us-east-1"
 

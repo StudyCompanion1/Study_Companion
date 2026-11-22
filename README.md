@@ -4,10 +4,9 @@ Full-stack app: FastAPI backend (`backend/`) + React/Vite frontend (`frontend/`)
 
 __NOTE__: For the dedicated QA testing environment please use your own machine, by running the commands below [go to Setup](#setup) for more the full steps and make sure sure to have the [requirements](#requirements) pre configured.
 
-
 ## Structure
 
-```
+```tree
 backend/    FastAPI app (Python, managed with uv)
 frontend/   React + Vite app (npm workspace)
 ```
@@ -70,7 +69,7 @@ Repo variables the `deploy` job reads: `AWS_REGION`, `AWS_ROLE_ARN`, `ECR_REPO`,
 
 The login page (`frontend/src/auth/AuthForm.tsx` and `.css`) is a **temporary design** so the login flow can be used and tested; the UX/UI group will replace it with the Figma design. A new design should keep calling the functions in `frontend/src/auth/api.ts`.
 
-Login state lives in an HttpOnly cookie that the browser sends automatically, so frontend code never handles tokens. In backend routes that need the logged-in user, add a `user: CurrentUser` parameter (from `app.auth.dependencies`) and use `user.id`. Try the endpoints at http://127.0.0.1:8000/docs while the backend is running.
+Login state lives in an HttpOnly cookie that the browser sends automatically, so frontend code never handles tokens. In backend routes that need the logged-in user, add a `user: CurrentUser` parameter (from `app.auth.dependencies`) and use `user.id`. Try the endpoints at `http://127.0.0.1:8000/docs` while the backend is running.
 
 ## Scripts (run from root)
 
@@ -117,6 +116,36 @@ Follow the [Gemini API Key Instructions](https://ai.google.dev/gemini-api/docs/a
 GEMINI_API_KEY=your_api_key_here
 ```
 
+### Brave API Key
+
+Add your Brave API key to a `.env` file in the backend folder.
+
+Follow the [Brave API Key Instructions](https://api-dashboard.search.brave.com/documentation/guides/authentication).
+
+You will be prompted to enter your debit or credit card information. You will not be charged unless you exceed the free $5 monthly credit, which covers up to 1,000 API calls per month. Your free credit resets every month.
+
+__NOTE__: Also recommend adding usage limits not to exceed the free monthly $5.
+
+```env
+BRAVE_API_KEY=your_api_key_here
+```
+
+### Rate Limiting
+
+To apply rate limiting to your function that calls on gemini you can import
+
+```file
+from ai_processing.utils.retry_ai_decorator import retry
+```
+
+then add in the decorator
+
+```decorator
+@retry(max_attempts=6, delay=2.0, backoff=2.0)
+```
+
+on top of your function, adjust the parameters as needed.
+
 ### FastAPI Endpoints
 
 **POST `/api/analyze` — Keyword and Concept Extraction**
@@ -147,6 +176,27 @@ Both endpoints return:
 ```
 
 ### QA Testing
+
+Automated tests run from the project root:
+
+```powershell
+npm run test:backend
+npm run test:frontend
+npx playwright install chromium
+npm run test:e2e
+```
+
+Run `uv sync --project backend` after updating Python test dependencies. Backend
+coverage includes the app, AI processing, and the standalone S3 upload helper.
+AI and AWS unit tests mock provider calls and do not need API keys or credentials.
+Document extraction tests read real fixture files generated in temporary folders.
+The two existing model validation tests marked `xfail` remain known limitations.
+
+Browser tests start separate servers on ports 5180 and 8100, use `e2e-test.db`,
+and keep uploaded files in a temporary directory. Chat browser tests mock the AI
+endpoint; material workflows use the real test backend. To use an installed Chrome
+instead of downloading Chromium, set `$env:PLAYWRIGHT_CHROMIUM_CHANNEL = 'chrome'`
+before running `npm run test:e2e` in PowerShell.
 
 From the project root, start the backend:
 

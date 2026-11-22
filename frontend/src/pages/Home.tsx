@@ -1,18 +1,18 @@
+import { useEffect, useState } from 'react'
 import { NavRail } from '../components/NavRail'
 import { PageHeader } from '../components/PageHeader'
 import { SectionHeader } from '../components/SectionHeader'
-import { SessionCard, type Session } from '../components/SessionCard'
 import { List } from '../components/List'
 import { PracticeRow, type PracticeTopic } from '../components/PracticeRow'
 import { QuizRow, type QuizResult } from '../components/QuizRow'
-import { ThemeSwitcher } from '../components/ThemeSwitcher'
+import Chatbot from '../components/Chatbot'
+import { useMaterialUpload } from '../materials/useMaterialUpload'
+import type { User } from '../auth/api'
+import { listCollections } from '../collections/api'
+import { collectionHref } from '../collections/routes'
+import { CollectionCard } from '../collections/CollectionCard'
+import type { Collection, LoadStatus } from '../collections/types'
 import './Home.css'
-
-const sessions: Session[] = [
-  { subject: 'BIO 201', kind: 'slides', band: 'green', title: 'Cell structure', meta: 'Slide 4 of 18 · 2 h ago', percent: 40 },
-  { subject: 'HIST 204', kind: 'file', band: 'yellow', title: 'Chapter 3 reading', meta: 'Page 12 of 30 · yesterday', percent: 40 },
-  { subject: 'CHEM 110', kind: 'slides', band: 'blue', title: 'Acids and bases', meta: 'Slide 9 of 22 · 3 days ago', percent: 41 },
-]
 
 const practiceTopics: PracticeTopic[] = [
   { title: 'Mitochondria and ATP', meta: 'BIO 201 · slides 6–9', missedLabel: 'Missed 4 of 6', level: 'low' },
@@ -26,28 +26,53 @@ const quizzes: QuizResult[] = [
   { title: 'The Treaty of Versailles', meta: 'HIST 204 · 8 Sep', score: 4, outOf: 10, level: 'low', badgeLabel: 'Needs practice' },
 ]
 
-export function Home() {
+export function Home({ user }: { user: User }) {
+  const upload = useMaterialUpload()
+  const [collections, setCollections] = useState<Collection[]>([])
+  const [collectionsStatus, setCollectionsStatus] = useState<LoadStatus>('loading')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    listCollections(controller.signal)
+      .then((list) => {
+        if (controller.signal.aborted) return
+        setCollections(list)
+        setCollectionsStatus('ready')
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setCollectionsStatus('error')
+      })
+    return () => controller.abort()
+  }, [])
+
   return (
-    <div className="home">
+    <div className="home"> 
       <NavRail active="Home" />
       <main className="home__main">
         <div className="home__page">
-          <div className="home__theme-row">
-            <ThemeSwitcher />
-          </div>
           <PageHeader
-            title="Good afternoon, Maya"
+            title={`Good afternoon, ${user.name}`}
             summary="You studied for 42 minutes across 3 sessions this week."
-            actionLabel="Upload material"
+            actionLabel={upload.label}
+            onAction={upload.open}
+            actionDisabled={upload.busy}
           />
+          {upload.element}
 
           <section className="home__section">
             <SectionHeader title="Pick up where you left off" meta="3 most recent" />
-            <div className="home__sessions">
-              {sessions.map((session) => (
-                <SessionCard key={session.title} {...session} />
-              ))}
-            </div>
+            {collectionsStatus === 'loading' && <p>Loading collections…</p>}
+            {collectionsStatus === 'error' && <p>Couldn't load your collections.</p>}
+            {collectionsStatus === 'ready' && collections.length === 0 && (
+              <p>No collections yet. Create one to get started.</p>
+            )}
+            {collectionsStatus === 'ready' && collections.length > 0 && (
+              <div className="home__sessions">
+                {collections.slice(0, 3).map((collection) => (
+                  <CollectionCard key={collection.id} collection={collection} href={collectionHref(collection.id)} />
+                ))}
+              </div>
+            )}
           </section>
 
           <div className="home__columns">
@@ -66,11 +91,13 @@ export function Home() {
                 {quizzes.map((quiz) => (
                   <QuizRow key={quiz.title} {...quiz} />
                 ))}
-              </List>
-            </section>
+                            </List>
+              </section>
+            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+
+        <Chatbot />
+      </div>
   )
 }

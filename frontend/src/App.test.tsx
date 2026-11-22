@@ -8,9 +8,27 @@ function mockFetch(status: number, body: unknown) {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  window.history.replaceState({}, '', '/')
 })
 
 describe('App', () => {
+  test('returns to login if checking the current session fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')))
+    render(<App />)
+    expect(await screen.findByRole('button', { name: 'Guest login' })).toBeInTheDocument()
+  })
+
+  test('opens the collections route after verifying the session', async () => {
+    window.history.replaceState({}, '', '/collections')
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((path: string) => Promise.resolve(
+      new Response(JSON.stringify(path === '/api/auth/me'
+        ? { id: '1', name: 'Maya', email: 'maya@example.com' }
+        : []), { status: 200 }),
+    )))
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: 'Collections', level: 1 })).toBeInTheDocument()
+    expect(await screen.findByText(/No collections yet/)).toBeInTheDocument()
+  })
   test('shows a loading status before the backend responds', () => {
     vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})))
     render(<App />)
@@ -30,5 +48,7 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByText('Good afternoon, Maya')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Decrease Font Size' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Increase Font Size' })).not.toBeInTheDocument()
   })
 })

@@ -1,11 +1,13 @@
-"""TI-2: uploads require login and are persisted to S3 + CourseMaterial, not just sent to Gemini."""
+"""TI-2: the AI upload endpoints require login, and app/storage.py uses S3 once S3_BUCKET is set."""
 
-from unittest.mock import patch
+import uuid
+from unittest.mock import MagicMock
 
-from sqlmodel import select
+import pytest
+from botocore.exceptions import ClientError
 
-from app.models import CourseMaterial
-from tests.test_auth import register
+from app import storage
+from app.config import settings
 
 
 def _pdf_file():
@@ -17,21 +19,56 @@ def test_analyze_requires_login(client):
     assert res.status_code == 401
 
 
-def test_analyze_stores_material_for_logged_in_user(client, session):
-    user = register(client).json()
+@pytest.fixture
+def s3(tmp_path, monkeypatch):
+    client = MagicMock()
+    monkeypatch.setattr(settings, "s3_bucket", "test-bucket")
+    monkeypatch.setattr(storage, "_s3", lambda: client)
+    monkeypatch.setattr(storage, "S3_CACHE_DIR", tmp_path / "cache")
+    monkeypatch.setattr(storage, "LOCAL_UPLOAD_DIR", tmp_path / "uploads")
+    return client
 
-    with (
-        patch("app.main.analyze_pdf", return_value="summary text"),
-        patch("app.main.upload_file") as mock_upload,
-    ):
-        res = client.post("/api/analyze", files=_pdf_file())
 
-    assert res.status_code == 200
-    assert res.json() == {"result": "summary text"}
-    mock_upload.assert_called_once()
+def test_upload_file_goes_to_s3(s3, tmp_path):
+    storage.upload_file("/tmp/notes.pdf", "users/abc/file.pdf")
 
-    material = session.exec(select(CourseMaterial)).one()
-    assert str(material.user_id) == user["id"]
-    assert material.title == "notes"
-    assert material.file_type == "pdf"
-    assert material.file_path == mock_upload.call_args[0][1]  # the S3 key passed to upload_file
+    s3.upload_file.assert_called_once_with("/tmp/notes.pdf", "test-bucket", "users/abc/file.pdf")
+    assert not (tmp_path / "uploads").exists()
+
+
+def test_stored_path_downloads_from_s3_once(s3):
+    s3.download_file.side_effect = lambda bucket, key, dest: open(dest, "wb").write(b"data")
+
+    first = storage.stored_path("users/abc/file.pdf")
+    second = storage.stored_path("users/abc/file.pdf")
+
+    assert first == second and first.read_bytes() == b"data"
+    s3.download_file.assert_called_once()
+
+
+def test_stored_path_missing_in_s3(s3):
+    s3.download_file.side_effect = ClientError({"Error": {"Code": "404"}}, "HeadObject")
+
+    with pytest.raises(FileNotFoundError):
+        storage.stored_path("users/abc/missing.pdf")
+    with pytest.raises(FileNotFoundError):
+        storage.stored_path("../secret.txt")
+    s3.download_file.assert_called_once()
+
+
+def test_delete_user_files_removes_s3_objects(s3):
+    user_id = uuid.uuid4()
+    s3.get_paginator.return_value.paginate.return_value = [
+        {"Contents": [{"Key": f"users/{user_id}/a.pdf"}, {"Key": f"users/{user_id}/b.txt"}]},
+        {},
+    ]
+
+    storage.delete_user_files(user_id)
+
+    s3.get_paginator.return_value.paginate.assert_called_once_with(
+        Bucket="test-bucket", Prefix=f"users/{user_id}/"
+    )
+    s3.delete_objects.assert_called_once_with(
+        Bucket="test-bucket",
+        Delete={"Objects": [{"Key": f"users/{user_id}/a.pdf"}, {"Key": f"users/{user_id}/b.txt"}]},
+    )

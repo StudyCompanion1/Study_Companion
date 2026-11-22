@@ -131,13 +131,19 @@
   box-sizing: border-box;
 }
 
-/* Reused ThemeSwitcher sits above the form, right-aligned, in normal flow so the menu it opens
-   can never be clipped off-screen by absolute positioning. */
+/* Accessibility shortcut sits above the form, right-aligned. */
 .auth-accessibility {
   display: flex;
   justify-content: flex-end;
   width: 100%;
   max-width: 26rem;
+}
+
+.auth-accessibility__button {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  color: var(--ink);
 }
 
 .auth-form-wrapper {

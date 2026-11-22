@@ -4,8 +4,9 @@ import type { Collection, MaterialKind, Note } from './types'
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
 
-/** { value: 18, unit: 'slides' } → "18 slides"; singular for 1 ("1 page"). */
+/** { value: 18, unit: 'slides' } → "18 slides"; singular for 1 ("1 page"); null → "—". */
 export function formatLength(length: Note['length']): string {
+  if (!length) return '—'
   const { value, unit } = length
   if (unit === 'min') return `${value} min`
   const word = value === 1 ? unit.slice(0, -1) : unit
@@ -30,8 +31,8 @@ export function formatRelative(iso: string, now: Date = new Date()): string {
 }
 
 /** Groups collections by term, keeping the order terms first appear in. */
-export function groupByTerm(list: Collection[]): { term: string; collections: Collection[] }[] {
-  const groups = new Map<string, Collection[]>()
+export function groupByTerm(list: Collection[]): { term: Collection['term']; collections: Collection[] }[] {
+  const groups = new Map<Collection['term'], Collection[]>()
   for (const collection of list) {
     const group = groups.get(collection.term) ?? []
     group.push(collection)
@@ -40,9 +41,10 @@ export function groupByTerm(list: Collection[]): { term: string; collections: Co
   return [...groups].map(([term, collections]) => ({ term, collections }))
 }
 
-/** Most recently opened first. Returns a new array; never changes the one passed in. */
+/** Most recently opened first, never-opened last. Returns a new array; never changes the one passed in. */
 export function sortByOpened(list: Note[]): Note[] {
-  return [...list].sort((a, b) => new Date(b.openedAt).getTime() - new Date(a.openedAt).getTime())
+  const time = (note: Note) => (note.openedAt ? new Date(note.openedAt).getTime() : 0)
+  return [...list].sort((a, b) => time(b) - time(a))
 }
 
 /** Only the notes that belong to one collection. */
@@ -66,12 +68,19 @@ export function masteryLabel(level: MasteryLevel): string {
   return { strong: 'Mastered', review: 'Review soon', low: 'Needs practice' }[level]
 }
 
-/** The type word shown with a file: "Slides", "PDF", "Doc", "Audio". */
+/** The type word shown with a file: "Slides", "PDF", "Doc", "Audio", "Image". */
 export function materialLabel(kind: MaterialKind): string {
-  return { slides: 'Slides', pdf: 'PDF', doc: 'Doc', audio: 'Audio' }[kind]
+  return { slides: 'Slides', pdf: 'PDF', doc: 'Doc', audio: 'Audio', image: 'Image' }[kind]
+}
+
+/** Notes whose title or file name contains the search words, ignoring letter case. */
+export function searchNotes(list: Note[], query: string): Note[] {
+  const words = query.trim().toLowerCase()
+  if (!words) return list
+  return list.filter((note) => `${note.title} ${note.material.fileName}`.toLowerCase().includes(words))
 }
 
 /** Summary under a collection's title, e.g. "BIO 201 · Autumn 2026 · 12 notes". */
 export function collectionSummary(collection: Collection, noteCount: number): string {
-  return `${collection.code} · ${collection.term} · ${plural(noteCount, 'note')}`
+  return [collection.code, collection.term, plural(noteCount, 'note')].filter(Boolean).join(' · ')
 }
